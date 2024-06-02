@@ -1,18 +1,14 @@
 api_token_path = '.api_token'
-f = open(api_token_path, "r")
-api_token = f.read()
-f.close() 
-
 api_url = 'https://codeweekend.dev:3721/api/'
 files_url = 'https://codeweekend.dev:81/'
-
-print('API TOKEN:', api_token)
-print('API URL:', api_url)
 
 import requests
 import json
 import time
 import os
+
+with open(api_token_path, "r") as f:
+    api_token = f.read()
 
 headers = {
     'authorization': f'Bearer {api_token}'
@@ -73,27 +69,10 @@ def download_submission(submission_id):
     return content
 
 def update_display_name(new_name):
-  url = api_url + 'update_user'
-  data = {
-      'display_name': new_name,
-      'email': "",
-      'team_members': ""
-  }
-  return requests.post(url, json=data, headers=headers).content
-
-# show(get_scoreboard())
-# show(get_submission_info(427))
-# show(get_team_dashboard())
-# show(get_team_submissions())
-# download_submission(476)
-# get_test(1)
-# update_display_name('uNderCut')
-
-# Submission example
-def example():
-  submission_id = submit(1, '{ "a" : 123 }')
-  print(f'Submission_id: {submission_id}')
-  info = get_submission_info(submission_id, wait=True)
-  print(f'Result: {info}')
-
-#example()
+    url = api_url + 'update_user'
+    data = {
+        'display_name': new_name,
+        'email': "",
+        'team_members': ""
+    }
+    return requests.post(url, json=data, headers=headers).content

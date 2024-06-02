@@ -1,1 +1,8 @@
 .api_token
+
+**/__pycache__/
+.pyc
+.vscode
+
+tasks/
+submissions/
