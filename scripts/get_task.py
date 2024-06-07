@@ -11,14 +11,16 @@ def init_task_dir(task_id):
         os.mkdir(path)
 
 def get_task(task_id):
+    init_task_dir(task_id)
     path = os.path.join("tasks",f"{task_id}", "input");
     if os.path.isfile(path):
         print(f"Task input is already downloaded.")
     else:
         content = cw.get_test(task_id)
-        with open(path, 'wb') as f:
-            f.write(content)
-            print(f"Task {task_id} input is now available at {path}.")    
+        if content is not None:
+            with open(path, 'wb') as f:
+                f.write(response.content)
+            print(f"Task {task_id} input is now available at {path}.")
 
 def main():
     parser = argparse.ArgumentParser("Get Code Weekend submission.")
@@ -26,8 +28,7 @@ def main():
     args = parser.parse_args()
     task_id = args.task[0]
 
-    init_task_dir(task_id)
     get_task(task_id)
 
-
-main()
+if __name__ == "__main__":
+    main()

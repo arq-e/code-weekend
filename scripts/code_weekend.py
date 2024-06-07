@@ -26,7 +26,11 @@ def get_team_dashboard():
 def get_test(task_id):
     task_id_padded = '{:03d}'.format(task_id)
     url = f'{files_url}{task_id_padded}.json'
-    return requests.get(url, headers=headers).content
+    res = requests.get(url, headers=headers)
+    if res.status_code == 200:
+        return res.content
+    print(f'Error {res.status_code}:\n{res.text}')
+    return None
 
 # Returns at most 50 submissions
 def get_team_submissions(offset=0, task_id=None):
@@ -37,12 +41,16 @@ def get_team_submissions(offset=0, task_id=None):
 
 def get_submission_info(submission_id, wait=False):
     url = f'{api_url}submission_info/{submission_id}'
-    res = requests.get(url, headers=headers).json()
-    if 'Pending' in res and wait:
+    res = requests.get(url, headers=headers)
+    if res.status_code != 200:
+        print(f'Error {res.status_code}:\n{res.text}')
+        return None
+    json = res.json()
+    if 'Pending' in json and wait:
         print('Submission is in Pending state, waiting...')
         time.sleep(1)
         return get_submission_info(submission_id)
-    return res
+    return json
 
 # Returns submission_id
 def submit(task_id, solution):
@@ -50,7 +58,7 @@ def submit(task_id, solution):
                         headers=headers, files={'file': solution})
     if res.status_code == 200:
         return res.text
-    print(f'Error: {res.text}')
+    print(f'Error {res.status_code}:\n{res.text}')
     return None
 
 def download_submission(submission_id):
