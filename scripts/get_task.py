@@ -19,7 +19,7 @@ def get_task(task_id):
         content = cw.get_test(task_id)
         if content is not None:
             with open(path, 'wb') as f:
-                f.write(response.content)
+                f.write(content)
             print(f"Task {task_id} input is now available at {path}.")
 
 def main():
