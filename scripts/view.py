@@ -35,7 +35,7 @@ def load_monsters(jmon: list):
 def view(path: str):
   j = json.load(open(path, 'r'))
   monsters = load_monsters(j['monsters'])
-
+  (start_x, start_y) = (j['start_x'], j['start_y'])
   [x_vals, y_vals] = zip(*[(m.x, m.y) for m in monsters])
 
   def draw_subplots(nrows, ncols, rules):
@@ -46,7 +46,8 @@ def view(path: str):
       im = sub.scatter(x_vals, y_vals, c=colors, cmap='cool')
       sub.set_title(rule)
       sub.set_aspect('equal')
-      fig.colorbar(im, ax=sub)
+      sub.plot(start_x, start_y, marker = 'x', markersize = 10, color = 'darkgreen')
+      fig.colorbar(im, ax=sub, ticks = np.linspace(min(colors), max(colors), 10))
 
 
   draw_subplots(2, 3, ("m.exp", "m.gold", "m.hp", "m.exp * m.gold / m.hp", "m.exp + m.gold", "m.gold / m.hp"))
