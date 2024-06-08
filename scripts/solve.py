@@ -9,10 +9,11 @@ def solve(path: str, task_id: int, solver_id: int, send = False) -> str:
   #TODO: write to file here and do not download from site
   #base = os.path.basename(path)
   #solution_path = os.path.join("solutions", f"{task_id}", f"{base}", f"{solver_id}")
-  input_path = os.path.join("tasks", f"{task_id}", "input")
-  output_path = os.path.join("tasks", f"{task_id}", "last_output")
+  input_path = os.path.abspath(os.path.join("tasks", f"{task_id}", "input"))
+  output_path = os.path.abspath(os.path.join("tasks", f"{task_id}", "last_output"))
 
   result = subprocess.run([f'{path}', '-i', f'{input_path}', '-o', f'{output_path}', '-s', f'{solver_id}'], capture_output=True)
+  print(result.args)
   if result.returncode != 0:
     print(f"Failed to solve task {task_id} with solver {path} {solver_id}")
     print(result.stdout)
