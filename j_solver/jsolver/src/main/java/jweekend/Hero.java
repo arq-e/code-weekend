@@ -18,6 +18,12 @@ public class Hero {
     @JsonProperty("level_range_coeff")
     int rangeC;
 
+    double expBase;
+    double expEarly;
+    double expLate;
+    double early;
+    double late; 
+
     int baseTurns;
     int turnsLeft;
     Position pos;
@@ -47,7 +53,13 @@ public class Hero {
         expToUp = 1000;
     }
 
-    public void initHero() {
+    public void initHero(double[] params) {
+        expBase = params[0];
+        expEarly = params[1];
+        expLate = params[2];
+        early = params[3];
+        late = params[4]; 
+
         s = baseS;
         p = baseP;
         r = baseR;
@@ -108,17 +120,17 @@ public class Hero {
     }
 
     public double calculateProfit(Monster monster) {
-        double expCoeff = 0.8;
-        if (turnsLeft * 1.0 / baseTurns > 0.6) {
-            expCoeff = 5.0;
-        } else if (turnsLeft * 1.0 / baseTurns < 10) {
-            expCoeff = 0.1;
+        double expCoeff = expBase;
+        if (turnsLeft * 1.0 / baseTurns >= early) {
+            expCoeff = expEarly;
+        } else if (turnsLeft * 1.0 / baseTurns <= late) {
+            expCoeff = expLate;
         }
         double dist = (Math.pow(this.pos.x - monster.x, 2) + Math.pow(this.pos.y - monster.y, 2));
         double defeatTime = dist / this.s + monster.hp / this.p;
         if (defeatTime > turnsLeft) return 0;
         double profit = (monster.gold + monster.exp * expCoeff) /  defeatTime;
-        profit *= (defeatTime / (2*turnsLeft));
+        profit *= (turnsLeft - defeatTime) / (turnsLeft);
         return profit;
     }
 

@@ -27,9 +27,27 @@ public class Main {
         int[] bestScores = loadBest(25);
         int[] oldBest = Arrays.copyOf(bestScores, 25);
         boolean[] improved = new boolean[25];
-        for (int k = 0; k < 1; ++k) {
-            for (int i = 1; i <= 25; ++i) {
-                compute("test\\" + i + "\\input", i, bestScores, improved);
+        double[] params = new double[]{0.5, 2.0, 0.0, 0.6, 0.3};
+        for (int i = 1; i <= 25; ++i) {
+            try(BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(Paths.get("stats\\" + i))))) {
+                for (double expBase = 0.5; expBase < 0.8; expBase += 0.1) {
+                    for (double expEarly = 2.0; expEarly <= 5.0; expEarly += 1.0) {
+                        for (double expLate = 0.0; expLate < 0.5; expLate += 0.1) {
+                            for (double earlyMark = 0.7; earlyMark > 0.6; earlyMark -= 0.1) {
+                                for (double lateMark = 0.2; lateMark > 0.0; lateMark -= 0.1) {
+                                    params[0] = expBase;
+                                    params[1] = expEarly;
+                                    params[2] = expLate;
+                                    params[3] = earlyMark;
+                                    params[4] = lateMark;
+                                    int res = compute("test\\" + i + "\\input", i, bestScores, improved, params); 
+                                    String out = String.format("%.2f %.2f %.2f %.2f %.2f : %d\n", params[0], params[1], params[2], params[3], params[4], res);
+                                    bw.write(out);              
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         for (int i = 0; i < 25; ++i) {
@@ -43,8 +61,9 @@ public class Main {
         System.out.println("End!");
     }
 
-    public static void compute(String path, int task, int[] bestScores, boolean[] improved) {
+    public static int compute(String path, int task, int[] bestScores, boolean[] improved, double[] params) {
         ObjectMapper objectMapper = new ObjectMapper();
+        int res = 0;
         try {
             JsonNode node = objectMapper.readTree(new File(path));
             Iterator<Entry<String, JsonNode>> it = node.fields();
@@ -86,7 +105,7 @@ public class Main {
     
             }
             if (hero != null) {
-                hero.initHero();
+                hero.initHero(params);
                 hero.pos = new Position(x, y);
                 hero.pos.maxX = w;
                 hero.pos.maxY = h;
@@ -94,10 +113,12 @@ public class Main {
                 hero.baseTurns = numTurns;
             }
             Solver solver = new Solver(hero, monsters, w, h);
-            solver.solveByRelativeProfit();
+            solver.solveWithNClosestProfit(3);
+            //solver.solveByRelativeProfit();
             //solver.solveWithNClosest(2);
             //solver.solveHuntingRandom();
-            //solver.solveHuntingClosest();            
+            //solver.solveHuntingClosest();       
+            res = hero.gold;     
             if (solver.hero.gold > bestScores[task-1]) {
                 bestScores[task-1] = solver.hero.gold;
                 improved[task-1] = true;
@@ -108,6 +129,8 @@ public class Main {
         } catch( IOException e) {
             e.printStackTrace();
         }
+
+        return res;
 
     }
 

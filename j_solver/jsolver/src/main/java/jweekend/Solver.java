@@ -46,6 +46,22 @@ public class Solver {
         }
     }
 
+    public void solveWithNClosestProfit(int n) {
+        while (hero.turnsLeft > 0) {
+            Monster target = null;
+            if (Math.random()*10 > 2) {
+                target = getClosestMonster();
+            } else {
+                target = getFromNClosestProfit(n);
+            }
+
+            if (target == null) break;
+            hero.move(target, turns);
+            hero.kill(target, turns);
+            monsters.remove(target);            
+        }
+    }
+
     public void solveByRelativeProfit() {
         while (hero.turnsLeft > 0) {
             Monster target = getMostProfitable();
@@ -75,6 +91,24 @@ public class Solver {
             monsters.remove(target);
         }
 
+    }
+
+    public Monster getFromNClosestProfit(int n) {
+        PriorityQueue<int[]> pq = new PriorityQueue<>((a,b) -> a[1] - b[1]);
+        for (int i = 0; i < monsters.size(); ++i) {
+            int[] val = new int[2];
+            val[0] = i;
+            val[1] = (int)hero.calculateProfit(monsters.get(i));
+            pq.offer(val);
+            if (pq.size() > n) pq.poll();
+        }
+        int res = pq.poll()[0];
+        while (pq.size() > 0 ) {
+            if ((int)(Math.min(Math.random()*10,1)) < 7) {
+                res = pq.poll()[0];
+            }
+        }
+        return monsters.get(res);
     }
 
     public Monster getMostProfitable() {
