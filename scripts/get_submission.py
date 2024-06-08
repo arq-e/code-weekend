@@ -1,5 +1,6 @@
 import os
 import argparse
+import json
 import code_weekend as cw
 
 def init_submission_dir(submission_id):
@@ -17,7 +18,7 @@ def get_submission_info(submission_id, wait=False) -> bool:
         info = cw.get_submission_info(submission_id, wait)
         if info is not None:
             with open(path, 'w') as f:
-                f.write(info)
+                json.dump(info, f)
             print(f"Submission {submission_id}'s info is now available at {path}.")
         else:
             return False

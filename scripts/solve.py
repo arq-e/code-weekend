@@ -45,8 +45,6 @@ def main():
 
     for task_id in range(min_id, max_id+1):
       solution = solve(solver, task_id, args.id, args.submit)
-      if args.submit:
-        submit(task_id, solution, wait=True, save=True)
 
 if __name__ == "__main__":
     main()
