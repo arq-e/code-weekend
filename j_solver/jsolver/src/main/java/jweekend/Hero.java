@@ -18,6 +18,7 @@ public class Hero {
     @JsonProperty("level_range_coeff")
     int rangeC;
 
+    int baseTurns;
     int turnsLeft;
     Position pos;
     int level;
@@ -25,6 +26,7 @@ public class Hero {
     int p;
     int r;
     int expToUp;
+    int gold;
 
     public Hero() {
 
@@ -41,6 +43,7 @@ public class Hero {
         this.p = baseP;
         this.r = baseR;
         this.level = 0;
+        gold = 0;
         expToUp = 1000;
     }
 
@@ -49,6 +52,7 @@ public class Hero {
         p = baseP;
         r = baseR;
         this.level = 0;
+        gold = 0;
         expToUp = 1000;
     }
 
@@ -61,13 +65,12 @@ public class Hero {
     }
 
     public void addExp(int exp) {
-        if (exp >= expToUp) {
-            int extra = exp - expToUp;
+        while (exp >= expToUp) {
+            
+            exp -= expToUp;
             levelUp();
-            expToUp -= extra;
-        } else {
-            expToUp -= exp;
         }
+        expToUp -= exp;
     }
 
     public void kill(Monster monster, List<Turn> turns) {
@@ -78,11 +81,12 @@ public class Hero {
             Turn nexTurn = new Turn(monster.name);
             turns.add(nexTurn);
         }
+        gold += monster.gold;
         addExp(monster.exp);
     }
 
     public void move(Monster monster, List<Turn> turns) {
-        if (pos.canReach(this.r, new Position(monster.x, monster.y))) return;
+        if (pos.canReach(this.r,new Position(monster.x, monster.y))) return;
         double numOfTurns = Math.sqrt(Math.pow(monster.x - this.pos.x, 2) + Math.pow(monster.y - this.pos.y, 2)) / s;
         int dx = (int) ((monster.x - this.pos.x) / numOfTurns);
         int dy = (int) ((monster.y - this.pos.y) / numOfTurns);
@@ -92,15 +96,30 @@ public class Hero {
             if (turnsLeft <= 0) return;
             Turn nextTurn = new Turn(this.pos.x, this.pos.y);
             turns.add(nextTurn);
-            if (pos.canReach(this.r, new Position(monster.x, monster.y))) return;
+            if (pos.canReach(this.r,new Position(monster.x, monster.y))) return;
         }
-        if (!pos.canReach(this.r, new Position(monster.x, monster.y))) {
+        if (!pos.canReach(this.r,new Position(monster.x, monster.y))) {
             this.pos.x = monster.x;
             this.pos.y = monster.y;
             this.turnsLeft--;
             Turn nextTurn = new Turn(this.pos.x, this.pos.y);
             turns.add(nextTurn);            
         }
+    }
+
+    public double calculateProfit(Monster monster) {
+        double expCoeff = 0.8;
+        if (turnsLeft * 1.0 / baseTurns > 0.6) {
+            expCoeff = 5.0;
+        } else if (turnsLeft * 1.0 / baseTurns < 10) {
+            expCoeff = 0.1;
+        }
+        double dist = (Math.pow(this.pos.x - monster.x, 2) + Math.pow(this.pos.y - monster.y, 2));
+        double defeatTime = dist / this.s + monster.hp / this.p;
+        if (defeatTime > turnsLeft) return 0;
+        double profit = (monster.gold + monster.exp * expCoeff) /  defeatTime;
+        profit *= (defeatTime / (2*turnsLeft));
+        return profit;
     }
 
 }
