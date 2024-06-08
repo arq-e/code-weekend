@@ -7,3 +7,8 @@
 tasks/
 submissions/
 build/
+
+bin/
+
+**/target
+**/test
