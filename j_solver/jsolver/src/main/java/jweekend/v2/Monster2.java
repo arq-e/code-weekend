@@ -26,13 +26,12 @@ public class Monster2 {
 
     }
 
-    public double value(int heroPower) {
-        int timeToKill = (this.hp + heroPower) / heroPower;
-        return this.gold * this.exp / (timeToKill * Math.pow(attack, 2));
+    public double value() {
+        return this.gold * this.exp;
     }
     
     public static int compare(Monster2 m1, Monster2 m2, int heroPower) {
-        return m1.value(heroPower) > m2.value(heroPower) ? 1 : -1;
+        return m1.value() > m2.value() ? 1 : -1;
     }    
 
 }

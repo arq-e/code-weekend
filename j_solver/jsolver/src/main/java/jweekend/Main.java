@@ -57,7 +57,7 @@ public class Main {
         } else {
             double[] params = new double[]{0, 0, 0, 0, 0};
             for (int k = 0; k < 1; ++k) {
-                for (int i = 30; i <= 30; ++i) {
+                for (int i = 26; i <= 50; ++i) {
                     int res = compute2("test\\" + i + "\\input", i, bestScores, improved, params, updated); 
                     if (t == 2 && res > oldBest[i-1]) 
                         System.out.println(res * 1.0 / oldBest[i-1]);
@@ -199,10 +199,9 @@ public class Main {
                 bestScores[task-1] = res;
                 improved[task-1] = true;
                 updated.add(task);
-                
-                
+                solver.writeSolution(objectMapper, "target\\"+task+".json");                 
             } 
-            solver.writeSolution(objectMapper, "target\\"+task+".json");
+
             //System.out.println(hero.gold +" " + hero.fatique);
 
                 

@@ -135,13 +135,15 @@ public class Solver2 {
                 double val = 0;
 
                 if (turns < 5) {
-                    for (int k = Math.max(0, i - hero.r); k <= Math.min(width, i + hero.r); ++k) {
+                    /*for (int k = Math.max(0, i - hero.r); k <= Math.min(width, i + hero.r); ++k) {
                         for (int l = Math.max(0, j - hero.r); l <= Math.min(height, j + hero.r); ++l) {
-                            if (monstersMap[k][l] > - 1) {
+                            double dist = Math.sqrt(Math.pow(hero.x - k, 2) + Math.pow(hero.y - l, 2));
+                            if (dist < hero.r && monstersMap[k][l] > - 1) {
                                 val += hero.calculateProfit(valueMap[i][j], turnsLeft, totalTurns, i, j, dangerMap);
                             }
                         }
-                    }
+                    }*/
+                    val = hero.calculateProfit(valueMap[i][j], turnsLeft, totalTurns, i, j, dangerMap);
                     if (val > max && i != hero.x && j != hero.y)  {
                         max = val / turns;
                         maxX = i;
@@ -155,37 +157,94 @@ public class Solver2 {
         return new int[]{maxX, maxY};
     }
 
+    public int[] getBestPosBase() {
+        long maxProfit = -1;
+        int maxX = 0;
+        int maxY = 0;
+        long minDanger = Long.MAX_VALUE;
+        int minX = 0;
+        int minY = 0;
+        for (int i = 0; i <= width; ++i) {
+            for (int j = 0; j <= height; ++j) {
+                long danger = dangerMap[i][j] + hero.movementFatique(i, j, dangerMap);
+                long profit = calculateProfitIntPosition(i, j);
+                if (danger == 0 && profit > maxProfit) {
+                    maxProfit = profit;
+                    maxX = i;
+                    maxY = j;
+                } else if (danger < minDanger && profit > 0) {
+                    minDanger = danger;
+                    minX = i;
+                    minY = j;
+                }
+            }
+        }
+        //if (max == -1) return getBestRandomPos(1000, 4);
+
+        if (maxProfit > 0) {
+            return new int[]{maxX, maxY};
+        } else return new int[]{minX, minY};
+
+    }
+
+    public long calculateProfitIntPosition(int x, int y) {
+        double expCoeff = 1.0;
+        if (turnsLeft * 1.0 / totalTurns >= 0.7) {
+            expCoeff = 10.0;
+        } else if (turnsLeft * 1.0 / totalTurns <= 0.2) {
+            expCoeff = 0.1;
+        } else if (turnsLeft * 1.0 / totalTurns <= 0.1) {
+            expCoeff = 0;
+        }
+        
+        long profit = (long) (valueMap[x][y][0] + valueMap[x][y][1] * expCoeff);
+
+
+        return profit;
+    }
+
+
+
     public void solveSeekingBestPos() {
         loadDanger();
         loadProfit(hero.r);
         setMonsters();
+        int prevTurns = turnsLeft;
         while (turnsLeft > 0) {
-            
-            System.out.println(turnsLeft + " " + hero.fatique);
+            //System.out.println(turnsLeft + " " + hero.fatique + " " + dangerMap[48][62]);
             if (monsterAlive.size() <= 0) break;
             int[] pos = null;
-            pos = getBestPos();
+            //pos = getBestPos();
+            pos = getBestPosBase();
             moveToPosition(pos[0], pos[1]);
             if (turnsLeft <= 0) break;
             int level = hero.level;
             clearAtPosition(catchMonsters(), pos, true);
             if (hero.level != level) {
                 clearAtPosition(catchMonsters(), pos, false);
-                loadProfit(hero.r);
             }
-            if (hero.fatique > maxGold * 1000) return;
+            if (prevTurns == turnsLeft || hero.fatique > maxGold * 1000) {
+                System.out.println("Path not Found!");
+                return;
+            } 
+            loadProfit(hero.r);
+            prevTurns = turnsLeft;
         }
     }
 
     public void loadDanger() {
         dangerMap = new long[width + 1][height + 1];
 
-        for (Monster2 m : monsters) {
+        for (Integer name : monsterAlive) {
+            Monster2 m = monsters.get(name);
             for (int i = Math.max(0, m.x - m.range); i <= Math.min(width, m.x + m.range); ++i) {
                 for (int j = Math.max(0, m.y - m.range); j <= Math.min(height, m.y + m.range); ++j) {
-                    if (Math.pow(i - m.x, 2) + Math.pow(j - m.y, 2) <= Math.pow(m.range, 2)) {
+
+                    double range = Math.sqrt(Math.pow(m.x - i, 2) + Math.pow(m.y - j, 2));
+
+                    if (range <= m.range) {
                         dangerMap[i][j] += m.attack;
-                    }       
+                    }  
                 }
             }
             maxGold = Math.max(maxGold, m.gold);
@@ -201,8 +260,10 @@ public class Solver2 {
                     if (Math.pow(i - m.x, 2) + Math.pow(j - m.y, 2) <= Math.pow(range, 2)) {
                         valueMap[i][j][0] += m.gold;
                         valueMap[i][j][1] += m.exp;
-                        valueMap[i][j][2] += (m.hp + hero.p) / m.hp;
+                        valueMap[i][j][2] += (m.hp + hero.p) / hero.p;
                     }       
+
+                        
                 }
             }
         }
@@ -212,7 +273,7 @@ public class Solver2 {
         for (int i = Math.max(0, m.x - m.range); i <= Math.min(width, m.x + m.range); ++i) {
             for (int j = Math.max(0, m.y - m.range); j <= Math.min(height, m.y + m.range); ++j) {
                 if (Math.pow(i - m.x, 2) + Math.pow(j - m.y, 2) <= Math.pow(m.range, 2)) {
-                    dangerMap[i][j] -= m.attack;
+                    if (dangerMap[i][j] > 0) dangerMap[i][j] -= m.attack;
                 }          
             }
         }        
@@ -222,8 +283,11 @@ public class Solver2 {
         for (int i = Math.max(0, m.x - range); i <= Math.min(width, m.x + range); ++i) {
             for (int j = Math.max(0, m.y - range); j <= Math.min(height, m.y + range); ++j) {
                 if (Math.pow(i - m.x, 2) + Math.pow(j - m.y, 2) <= Math.pow(range, 2)) {
-                    valueMap[i][j][0] -= m.gold;
-                    valueMap[i][j][1] -= m.exp;
+                    if (valueMap[i][j][0] > 0) {
+                        valueMap[i][j][0] -= m.gold;
+                        valueMap[i][j][1] -= m.exp;
+                        valueMap[i][j][2] -= (m.hp + hero.p) / hero.p;
+                    }
                 }          
             }
         }        
@@ -256,7 +320,8 @@ public class Solver2 {
         PriorityQueue<Integer> pq = new PriorityQueue<>((a, b) -> (Monster2.compare(monsters.get(a), monsters.get(b), hero.p)));
         for (int k = Math.max(0, hero.x - hero.r); k <= Math.min(width, hero.x + hero.r); ++k) {
             for (int l = Math.max(0, hero.y - hero.r); l <= Math.min(height, hero.y + hero.r); ++l) {
-                if (monstersMap[k][l] > - 1 && Math.pow(hero.x  - k, 2) + Math.pow(hero.y-l, 2) <= Math.pow(hero.r, 2) ) {
+                if (monstersMap[k][l] > -1 && 
+                    Math.pow(hero.x - k, 2) + Math.pow(hero.y - l, 2) <= Math.pow(hero.r, 2) ) {
                     pq.offer(monstersMap[k][l]);
                 }
             }
@@ -276,9 +341,7 @@ public class Solver2 {
             int hp = m.hp;
             if (hp / hero.p > turnsLeft)
                 return res;
-            if (m.exp > hero.expToUp && turnsLeft > 0.1 * totalTurns) {
-            }
-            turnsLeft = hero.destroyMonster(m, turns, turnsLeft, monsterAlive, monsters);
+            turnsLeft = hero.destroyMonster(m, turns, turnsLeft, monsterAlive, monsters, dangerMap);
             clearDanger(m);
             if(updateProfits) {
                 clearProfit(m, hero.r);
@@ -288,6 +351,8 @@ public class Solver2 {
         return res;
 
     }
+
+
 
     public void moveToPosition(int x, int y) {
         if (hero.x == x && hero.y == y) return;
@@ -305,7 +370,7 @@ public class Solver2 {
         if (hero.x != x && hero.y != y && canReach(hero.s, x, y)) {
             hero.x = x;
             hero.y = y;
-            hero.takeDamage(monsterAlive, monsters);
+            hero.fatique += dangerMap[hero.x][hero.y];
             turnsLeft--;
             if (turnsLeft < 0) return;
             Turn nextTurn = new Turn(hero.x, hero.y);
@@ -319,8 +384,8 @@ public class Solver2 {
         if (hero.x < 0) hero.x = 0;
         if (hero.x > width) hero.x = width;
         if (hero.y < 0) hero.y = 0;
-        if (hero.y > height) hero.y = height;      
-        hero.takeDamage(monsterAlive, monsters);
+        if (hero.y > height) hero.y = height;   
+        hero.fatique += dangerMap[hero.x][hero.y];   
     }
 
 
@@ -349,7 +414,7 @@ public class Solver2 {
             ArrayList<Monster> removed = new ArrayList<>();
             for (Monster2 m : monsters) {
                 if (canReach(hero.r, m.x, m.y)) {
-                    hero.destroyMonster(m, turns, turnsLeft, monsterAlive, monsters);
+                    hero.destroyMonster(m, turns, turnsLeft, monsterAlive, monsters, dangerMap);
                     //monstersCount = monsterAlive.size();
                     monstersMap[m.x][m.y] = -1;
                 }
@@ -377,7 +442,7 @@ public class Solver2 {
                 int count = 0;
                 for (Monster2 m : monsters) {
                     if (canReach(hero.r, m.x, m.y)) {
-                        count += m.value(hero.p);
+                        count += m.value();
                     }
                 }
                 if (count > maxCount) {
@@ -401,7 +466,7 @@ public class Solver2 {
 
             if (target == null) break;
             moveToPosition(target.x, target.y);
-            hero.destroyMonster(target, turns, n, monsterAlive, monsters);         
+            hero.destroyMonster(target, turns, n, monsterAlive, monsters, dangerMap);         
         }
     }
 

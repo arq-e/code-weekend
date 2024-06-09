@@ -76,14 +76,15 @@ public class Hero2{
         expToUp -= exp;
     }
 
-    public int destroyMonster(Monster2 monster, List<Turn> turns, int turnsLeft, Set<Integer> monsterAlive, List<Monster2> monsters) {
+    public int destroyMonster(Monster2 monster, List<Turn> turns, int turnsLeft, Set<Integer> monsterAlive, List<Monster2> monsters, long[][] dangerMap) {
         int hp = monster.hp;
         while (hp > 0) {
             turnsLeft--;
             if (turnsLeft < 0) return turnsLeft;
             hp -= p;
             if (hp > 0) {
-                takeDamage(monsterAlive, monsters);
+                this.fatique += dangerMap[this.x][this.y];
+                //takeDamage(monsterAlive, monsters);
             }
             Turn nexTurn = new Turn(monster.name);
             turns.add(nexTurn);
@@ -91,7 +92,8 @@ public class Hero2{
         monsterAlive.remove(monster.name);
         earnGold(monster.gold);
         addExp(monster.exp);
-        takeDamage(monsterAlive, monsters);
+        this.fatique += dangerMap[this.x][this.y];
+        //takeDamage(monsterAlive, monsters);
         return turnsLeft;
     }
 
@@ -139,19 +141,48 @@ public class Hero2{
         } else if (turnsLeft * 1.0 / totalTurns <= 0.1) {
             expCoeff = 0;
         }
-        if (values[1] > expToUp) expCoeff *= 20;
+        //if (values[1] > expToUp) expCoeff *= 20;
 
         double range = Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
         
         if (values[2] > turnsLeft) return 0;
-        double profit = (values[0] +  values[1] * expCoeff) /  (1000 + values[2] * dangerMap[x][y]);
+        long danger = /*movementFatique(x, y, dangerMap) +*/ dangerMap[x][y] * values[2];
+        double profit = (values[0]  + values[1] * expCoeff)  / (1 + Math.pow(danger, 2));
+        
+    
+        double dangerCoeff = 10000.0;
 
-        double dangerCoeff = 1000.0;
-
-        if (profit != 0 && dangerMap[x][y] / profit > dangerCoeff) {
+        if (profit == 0 && dangerMap[x][y] / profit > dangerCoeff) {
             profit = 0;
         }
         //profit *= (turnsLeft - defeatTime) / (turnsLeft);
         return profit;
     } 
+
+    public long movementFatique(int x, int y, long[][] dangerMap) {
+
+        long fate = dangerMap[x][y];
+        int posX = this.x;
+        int posY = this.y;
+
+        if (posX == x && posY == y) return 0;
+        double numOfTurns = Math.sqrt(Math.pow(x - posX, 2) + Math.pow(y - posY, 2)) / this.s;
+        int dx = (int) ((x - posX) / numOfTurns);
+        int dy = (int) ((y - posY) / numOfTurns);
+
+        while (numOfTurns-- > 1) {
+
+            posX += dx;
+            posY += dy;
+            if (posX < 0) posX = 0;
+            if (posX >= dangerMap.length) posX = dangerMap.length - 1;
+            if (posY < 0) posY = 0;
+            if (posY >= dangerMap[0].length) posY = dangerMap[0].length - 1;   
+            fate += dangerMap[posX][posY];
+        }  
+        
+        return fate;
+    }
+
+
 }
