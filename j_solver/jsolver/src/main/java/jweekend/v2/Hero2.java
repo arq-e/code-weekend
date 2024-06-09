@@ -6,9 +6,6 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import jweekend.Hero;
-import jweekend.Monster;
-import jweekend.Position;
 import jweekend.Turn;
 public class Hero2{
     @JsonProperty("base_speed")
@@ -31,8 +28,8 @@ public class Hero2{
     int p;
     int r;
     int expToUp;
-    public long gold;
-    long fatique;
+    public double gold;
+    public long fatique;
 
     public Hero2() {
 
@@ -67,7 +64,8 @@ public class Hero2{
     }
 
     public void earnGold(int gold) {
-        this.gold += gold * (1000 * 1.0 / (1000 + this.fatique));
+        double res = (gold * 1000) / (1000 + this.fatique);
+        this.gold += res;
     }
 
     public void addExp(int exp) {
@@ -79,14 +77,12 @@ public class Hero2{
         expToUp -= exp;
     }
 
-    public int destroyMonster(Monster2 monster, List<Turn> turns, int turnsLeft, Set<Integer> monsterAlive) {
-        if (monster.name == 934){
-            System.out.println();
-        }
+    public int destroyMonster(Monster2 monster, List<Turn> turns, int turnsLeft, Set<Integer> monsterAlive, List<Monster2> monsters) {
         int hp = monster.hp;
         while (hp > 0) {
             turnsLeft--;
             if (turnsLeft < 0) return turnsLeft;
+            takeDamage(monsterAlive, monsters);
             hp -= p;
             Turn nexTurn = new Turn(monster.name);
             turns.add(nexTurn);
@@ -95,6 +91,16 @@ public class Hero2{
         earnGold(monster.gold);
         addExp(monster.exp);
         return turnsLeft;
+    }
+
+    public void takeDamage(Set<Integer> monsterAlive, List<Monster2> monsters) {
+        for (int name : monsterAlive) {
+            Monster2 m = monsters.get(name);
+            double range = Math.sqrt(Math.pow(m.x - x, 2) + Math.pow(m.y - y, 2));
+            if (range <= m.range) {
+                this.fatique += m.attack;
+            }
+        }
     }
 
 
