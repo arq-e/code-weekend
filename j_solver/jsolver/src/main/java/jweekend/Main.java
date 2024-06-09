@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -14,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import jweekend.v2.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -24,43 +26,46 @@ public class Main {
 
     public static void main(String[] args) throws JsonProcessingException, IOException{
 
-        int[] bestScores = loadBest(25);
-        int[] oldBest = Arrays.copyOf(bestScores, 25);
-        boolean[] improved = new boolean[25];
-        double[] params = new double[]{0.5, 2.0, 0.0, 0.6, 0.3};
-        for (int i = 1; i <= 25; ++i) {
-            try(BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(Paths.get("stats\\" + i))))) {
-                for (double expBase = 0.5; expBase < 0.8; expBase += 0.1) {
-                    for (double expEarly = 2.0; expEarly <= 5.0; expEarly += 1.0) {
-                        for (double expLate = 0.0; expLate < 0.5; expLate += 0.1) {
-                            for (double earlyMark = 0.7; earlyMark > 0.6; earlyMark -= 0.1) {
-                                for (double lateMark = 0.2; lateMark > 0.0; lateMark -= 0.1) {
-                                    params[0] = expBase;
-                                    params[1] = expEarly;
-                                    params[2] = expLate;
-                                    params[3] = earlyMark;
-                                    params[4] = lateMark;
-                                    int res = compute("test\\" + i + "\\input", i, bestScores, improved, params); 
-                                    String out = String.format("%.2f %.2f %.2f %.2f %.2f : %d\n", params[0], params[1], params[2], params[3], params[4], res);
-                                    bw.write(out);              
-                                }
-                            }
-                        }
-                    }
+        int[] bestScores = loadBest(50);
+        int[] oldBest = Arrays.copyOf(bestScores, 50);
+        boolean[] improved = new boolean[50];
+
+        int part = 2;
+        if (part == 1) {
+            
+            double[] params = new double[]{0, 0, 0, 0, 0};
+            for (int k = 0; k < 10; ++k) {
+                for (int i = 1; i <= 25; ++i) {
+                    int res = compute("test\\" + i + "\\input", i, bestScores, improved, params); 
+                    System.out.println(i + " " + res);
                 }
             }
-        }
-        for (int i = 0; i < 25; ++i) {
-            if (improved[i]) {
-                System.out.println("Task " + (i + 1) + " result was improved:" + oldBest[i] + " to " + bestScores[i]);
-            } else {
-                //System.out.println("Task " + (i + 1) + " result was improved:" + oldBest[i] + " to " + bestScores[i]);                
+    
+            for (int i = 0; i < 25; ++i) {
+                if (improved[i]) {
+                    System.out.println("Task " + (i + 1) + " result was improved:" + oldBest[i] + " to " + bestScores[i]);
+                } else {
+                    //System.out.println("Task " + (i + 1) + " result was improved:" + oldBest[i] + " to " + bestScores[i]);                
+                }
             }
+            writeBest(bestScores);
+        } else {
+            double[] params = new double[]{0, 0, 0, 0, 0};
+            for (int i = 26; i <= 50; ++i) {
+                int res = compute2("test\\" + i + "\\input", i, bestScores, improved, params); 
+                //System.out.println(i + " " + res);
+            }
+    
+            for (int i = 25; i < 50; ++i) {
+                if (improved[i]) {
+                    System.out.println("Task " + (i + 1) + " result was improved:" + oldBest[i] + " to " + bestScores[i]);
+                } 
+            }
+            writeBest(bestScores);            
         }
-        writeBest(bestScores);
+
         System.out.println("End!");
     }
-
     public static int compute(String path, int task, int[] bestScores, boolean[] improved, double[] params) {
         ObjectMapper objectMapper = new ObjectMapper();
         int res = 0;
@@ -104,28 +109,82 @@ public class Main {
                 }
     
             }
-            if (hero != null) {
-                hero.initHero(params);
-                hero.pos = new Position(x, y);
-                hero.pos.maxX = w;
-                hero.pos.maxY = h;
-                hero.turnsLeft = numTurns;
-                hero.baseTurns = numTurns;
-            }
+
+            hero.initHero(params);
             Solver solver = new Solver(hero, monsters, w, h);
-            solver.solveWithNClosestProfit(3);
-            //solver.solveByRelativeProfit();
-            //solver.solveWithNClosest(2);
-            //solver.solveHuntingRandom();
-            //solver.solveHuntingClosest();       
-            res = hero.gold;     
-            if (solver.hero.gold > bestScores[task-1]) {
-                bestScores[task-1] = solver.hero.gold;
+            solver.solvePositional();
+            res = hero.gold; 
+            if (res > bestScores[task-1]) {
+                bestScores[task-1] = res;
                 improved[task-1] = true;
-                //System.out.println("Task " + task + " result was improved!");
                 solver.writeSolution(objectMapper, "target\\"+task+".json");
+            } 
+                
+        } catch( IOException e) {
+            e.printStackTrace();
+        }
+
+        return res;
+
+    }
+
+    public static int compute2(String path, int task, int[] bestScores, boolean[] improved, double[] params) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        int res = 0;
+        try {
+            JsonNode node = objectMapper.readTree(new File(path));
+            Iterator<Entry<String, JsonNode>> it = node.fields();
+            Hero2 hero = null;
+            List<Monster2> monsters = new ArrayList<>();
+            int x = 0;
+            int y = 0;
+            int numTurns = 0;
+            int w = 0;
+            int h = 0;        
+            while(it.hasNext()) {
+    
+                Entry<String, JsonNode> entry = it.next();
+                switch (entry.getKey()) {
+                    case "hero":
+                        hero = objectMapper.readValue(entry.getValue().toString(), Hero2.class);
+                        break;
+                    case "start_x":
+                        x = Integer.parseInt(entry.getValue().toString());
+                        break;
+                    case "start_y":
+                        y = Integer.parseInt(entry.getValue().toString());
+                        break;
+                    case "width":
+                        w = Integer.parseInt(entry.getValue().toString());
+                        break;    
+                    case "height":
+                        h = Integer.parseInt(entry.getValue().toString());
+                        break;
+                    case "num_turns":
+                        numTurns = Integer.parseInt(entry.getValue().toString());
+                        break;                
+                    case "monsters":
+                        monsters = objectMapper.readValue(entry.getValue().toString(), new TypeReference<List<Monster2>>(){});
+                        break;
+                    default:
+                        break;
+                }
+    
             }
-            
+
+            hero.init();
+            hero.x = x;
+            hero.y = y;
+            Solver2 solver = new Solver2(hero, monsters, w, h, numTurns);
+            solver.solvePositional();
+            res = (int) hero.gold; 
+            if (res > bestScores[task-1]) {
+                bestScores[task-1] = res;
+                improved[task-1] = true;
+                
+            } 
+            solver.writeSolution(objectMapper, "target\\"+task+".json");
+                
         } catch( IOException e) {
             e.printStackTrace();
         }

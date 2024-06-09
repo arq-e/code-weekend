@@ -1,6 +1,8 @@
 package jweekend;
 
 import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -32,7 +34,7 @@ public class Hero {
     int p;
     int r;
     int expToUp;
-    int gold;
+    public int gold;
 
     public Hero() {
 
@@ -85,7 +87,7 @@ public class Hero {
         expToUp -= exp;
     }
 
-    public void kill(Monster monster, List<Turn> turns) {
+    public void destroy(Monster monster, List<Turn> turns) {
         while (monster.hp > 0) {
             this.turnsLeft--;
             if (turnsLeft < 0) return;
@@ -97,11 +99,42 @@ public class Hero {
         addExp(monster.exp);
     }
 
+    public int clear(PriorityQueue<Integer> pq, List<Turn> turns, int[][] monsterMap, List<Monster> monsters, int[] value, int[][] heatMap) {
+        int baseValue = value[0];
+        int res = 0;
+        while (pq.size() > 0) {
+            int target = pq.poll();
+            Monster m = monsters.get(target);
+            int hp = m.hp;
+            if (hp / this.p > turnsLeft)
+                return res;
+            if (m.exp > this.expToUp && turnsLeft > 0.1 * baseTurns) {
+                if (Math.random() * value[0] / baseValue < 0.8) return res;
+            }
+            while (hp > 0) {
+                this.turnsLeft--;
+                if (turnsLeft <= 0) return res;
+                hp -= this.p;
+                Turn nexTurn = new Turn(m.name);
+                turns.add(nexTurn);                
+            }
+            ++res;
+            monsterMap[m.x][m.y] = -1;
+            gold += m.gold;
+            value[0] -= m.value(this.turnsLeft * 1.0 / this.baseTurns);
+            //heatMap[value[1]][value[2]] -= m.gold + m.exp;
+            addExp(m.exp);
+        }
+        return res;
+
+    }
+
     public void move(Monster monster, List<Turn> turns) {
         if (pos.canReach(this.r,new Position(monster.x, monster.y))) return;
         double numOfTurns = Math.sqrt(Math.pow(monster.x - this.pos.x, 2) + Math.pow(monster.y - this.pos.y, 2)) / s;
         int dx = (int) ((monster.x - this.pos.x) / numOfTurns);
         int dy = (int) ((monster.y - this.pos.y) / numOfTurns);
+
         while (numOfTurns > 1) {
             this.pos.move(dx, dy);
             this.turnsLeft--;
@@ -110,13 +143,40 @@ public class Hero {
             turns.add(nextTurn);
             if (pos.canReach(this.r,new Position(monster.x, monster.y))) return;
         }
-        if (!pos.canReach(this.r,new Position(monster.x, monster.y))) {
+        if (pos.canReach(this.r,new Position(monster.x, monster.y))) {
             this.pos.x = monster.x;
             this.pos.y = monster.y;
             this.turnsLeft--;
+            if (turnsLeft <= 0) return;
             Turn nextTurn = new Turn(this.pos.x, this.pos.y);
             turns.add(nextTurn);            
         }
+    }
+
+    public void moveToPosition(Position position, List<Turn> turns, int[][] wealth) {
+        if (this.pos.x == position.x && this.pos.y == position.y) return;
+        double numOfTurns = Math.sqrt(Math.pow(position.x - this.pos.x, 2) + Math.pow(position.y - this.pos.y, 2)) / s;
+        int dx = (int) ((position.x - this.pos.x) / numOfTurns);
+        int dy = (int) ((position.y - this.pos.y) / numOfTurns);
+
+        while (numOfTurns-- > 1) {
+            this.pos.move(dx, dy);
+            this.turnsLeft--;
+            if (turnsLeft <= 0) return;
+            Turn nextTurn = new Turn(this.pos.x, this.pos.y);
+            turns.add(nextTurn);
+            if (wealth[this.pos.x][this.pos.y] * (Math.random() + 0.5) > wealth[position.x][position.y]) {
+                return;
+            }
+        }
+        if (this.pos.x != position.x && this.pos.y != position.y && this.pos.canReach(this.s, position)) {
+            this.pos.x = position.x;
+            this.pos.y = position.y;     
+            this.turnsLeft--;
+            if (turnsLeft < 0) return;
+            Turn nextTurn = new Turn(this.pos.x, this.pos.y);
+            turns.add(nextTurn);                   
+        }      
     }
 
     public double calculateProfit(Monster monster) {
@@ -129,8 +189,8 @@ public class Hero {
         double dist = (Math.pow(this.pos.x - monster.x, 2) + Math.pow(this.pos.y - monster.y, 2));
         double defeatTime = dist / this.s + monster.hp / this.p;
         if (defeatTime > turnsLeft) return 0;
-        double profit = (monster.gold + monster.exp * expCoeff) /  defeatTime;
-        profit *= (turnsLeft - defeatTime) / (turnsLeft);
+        double profit = (monster.gold +  monster.exp * expCoeff) /  defeatTime;
+        //profit *= (turnsLeft - defeatTime) / (turnsLeft);
         return profit;
     }
 
