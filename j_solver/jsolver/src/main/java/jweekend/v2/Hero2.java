@@ -23,11 +23,11 @@ public class Hero2{
 
     public int x;
     public int y;
-    int level;
-    int s;
-    int p;
-    int r;
-    int expToUp;
+    public int level;
+    public int s;
+    public int p;
+    public int r;
+    public int expToUp;
     public double gold;
     public long fatique;
 
@@ -64,8 +64,7 @@ public class Hero2{
     }
 
     public void earnGold(int gold) {
-        double res = (gold * 1000) / (1000 + this.fatique);
-        this.gold += res;
+        this.gold += (gold * 1000) / (1000 + this.fatique);
     }
 
     public void addExp(int exp) {
@@ -82,14 +81,17 @@ public class Hero2{
         while (hp > 0) {
             turnsLeft--;
             if (turnsLeft < 0) return turnsLeft;
-            takeDamage(monsterAlive, monsters);
             hp -= p;
+            if (hp > 0) {
+                takeDamage(monsterAlive, monsters);
+            }
             Turn nexTurn = new Turn(monster.name);
             turns.add(nexTurn);
         }
         monsterAlive.remove(monster.name);
         earnGold(monster.gold);
         addExp(monster.exp);
+        takeDamage(monsterAlive, monsters);
         return turnsLeft;
     }
 
@@ -104,18 +106,52 @@ public class Hero2{
     }
 
 
-    /*public double calculateProfit(Monster monster) {
-        double expCoeff = expBase;
-        if (turnsLeft * 1.0 / baseTurns >= early) {
-            expCoeff = expEarly;
-        } else if (turnsLeft * 1.0 / baseTurns <= late) {
-            expCoeff = expLate;
+    public double calculateProfit(Monster2 monster, int turnsLeft, int totalTurns, int x, int y, long[][] dangerMap) {
+        double expCoeff = 1.0;
+        if (turnsLeft * 1.0 / totalTurns >= 0.7) {
+            expCoeff = 10.0;
+        } else if (turnsLeft * 1.0 / totalTurns <= 0.2) {
+            expCoeff = 0.1;
+        } else if (turnsLeft * 1.0 / totalTurns <= 0.1) {
+            expCoeff = 0;
         }
-        double dist = (Math.pow(this.pos.x - monster.x, 2) + Math.pow(this.pos.y - monster.y, 2));
-        double defeatTime = dist / this.s + monster.hp / this.p;
+
+        double range = Math.sqrt(Math.pow(x - monster.x, 2) + Math.pow(y - monster.y, 2));
+        
+        double defeatTime = monster.hp / this.p;
         if (defeatTime > turnsLeft) return 0;
-        double profit = (monster.gold +  monster.exp * expCoeff) /  defeatTime;
+        double profit = (monster.gold +  monster.exp * expCoeff) /  (defeatTime * dangerMap[x][y]);
+
+        double dangerCoeff = 10.0;
+        if (dangerMap[x][y] / monster.gold > dangerCoeff) {
+            profit = 0;
+        }
         //profit *= (turnsLeft - defeatTime) / (turnsLeft);
         return profit;
-    } */
+    } 
+
+    public double calculateProfit(int[] values,  int turnsLeft, int totalTurns, int x, int y, long[][] dangerMap) {
+        double expCoeff = 1.0;
+        if (turnsLeft * 1.0 / totalTurns >= 0.7) {
+            expCoeff = 10.0;
+        } else if (turnsLeft * 1.0 / totalTurns <= 0.2) {
+            expCoeff = 0.1;
+        } else if (turnsLeft * 1.0 / totalTurns <= 0.1) {
+            expCoeff = 0;
+        }
+        if (values[1] > expToUp) expCoeff *= 20;
+
+        double range = Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
+        
+        if (values[2] > turnsLeft) return 0;
+        double profit = (values[0] +  values[1] * expCoeff) /  (1000 + values[2] * dangerMap[x][y]);
+
+        double dangerCoeff = 1000.0;
+
+        if (profit != 0 && dangerMap[x][y] / profit > dangerCoeff) {
+            profit = 0;
+        }
+        //profit *= (turnsLeft - defeatTime) / (turnsLeft);
+        return profit;
+    } 
 }

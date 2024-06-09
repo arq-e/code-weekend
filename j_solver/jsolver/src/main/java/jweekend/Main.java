@@ -4,10 +4,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -29,12 +32,14 @@ public class Main {
         int[] bestScores = loadBest(50);
         int[] oldBest = Arrays.copyOf(bestScores, 50);
         boolean[] improved = new boolean[50];
+        Set<Integer> updated = loadUpdated(50);
 
         int part = 2;
+        int t = 1;
         if (part == 1) {
             
             double[] params = new double[]{0, 0, 0, 0, 0};
-            for (int k = 0; k < 10; ++k) {
+            for (int k = 0; k < 100; ++k) {
                 for (int i = 1; i <= 25; ++i) {
                     int res = compute("test\\" + i + "\\input", i, bestScores, improved, params); 
                     System.out.println(i + " " + res);
@@ -51,9 +56,15 @@ public class Main {
             writeBest(bestScores);
         } else {
             double[] params = new double[]{0, 0, 0, 0, 0};
-            for (int i = 26; i <= 50; ++i) {
-                int res = compute2("test\\" + i + "\\input", i, bestScores, improved, params); 
-                //System.out.println(i + " " + res);
+            for (int k = 0; k < 1; ++k) {
+                for (int i = 30; i <= 30; ++i) {
+                    int res = compute2("test\\" + i + "\\input", i, bestScores, improved, params, updated); 
+                    if (t == 2 && res > oldBest[i-1]) 
+                        System.out.println(res * 1.0 / oldBest[i-1]);
+                    else 
+                        System.out.println(i + "  " + res);
+                }
+
             }
     
             for (int i = 25; i < 50; ++i) {
@@ -61,7 +72,8 @@ public class Main {
                     System.out.println("Task " + (i + 1) + " result was improved:" + oldBest[i] + " to " + bestScores[i]);
                 } 
             }
-            writeBest(bestScores);            
+            writeBest(bestScores);     
+            writeBest(updated);       
         }
 
         System.out.println("End!");
@@ -112,13 +124,16 @@ public class Main {
 
             hero.initHero(params);
             Solver solver = new Solver(hero, monsters, w, h);
-            solver.solvePositional();
+            //solver.solvePositional();
+            solver.solveWithNClosest(1);
             res = hero.gold; 
             if (res > bestScores[task-1]) {
                 bestScores[task-1] = res;
                 improved[task-1] = true;
-                solver.writeSolution(objectMapper, "target\\"+task+".json");
+
             } 
+            solver.writeSolution(objectMapper, "target\\"+task+".json");
+
                 
         } catch( IOException e) {
             e.printStackTrace();
@@ -128,7 +143,7 @@ public class Main {
 
     }
 
-    public static int compute2(String path, int task, int[] bestScores, boolean[] improved, double[] params) {
+    public static int compute2(String path, int task, int[] bestScores, boolean[] improved, double[] params, Set<Integer> updated) {
         ObjectMapper objectMapper = new ObjectMapper();
         int res = 0;
         try {
@@ -176,14 +191,20 @@ public class Main {
             hero.x = x;
             hero.y = y;
             Solver2 solver = new Solver2(hero, monsters, w, h, numTurns);
-            solver.solvePositional();
+            //solver.solveWithNClosest(2);
+            //solver.solveSeekingRandomPos();
+            solver.solveSeekingBestPos();
             res = (int) hero.gold; 
             if (res > bestScores[task-1]) {
                 bestScores[task-1] = res;
                 improved[task-1] = true;
+                updated.add(task);
+                
                 
             } 
             solver.writeSolution(objectMapper, "target\\"+task+".json");
+            //System.out.println(hero.gold +" " + hero.fatique);
+
                 
         } catch( IOException e) {
             e.printStackTrace();
@@ -209,6 +230,38 @@ public class Main {
             System.out.println("Error while reading bestScores...");
         }
         return bestScores;
+    }
+
+    private static Set<Integer> loadUpdated(int count) {
+        Set<Integer> updated = new HashSet<>();   
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(Files.newInputStream(Paths.get("updated"))))) {
+            String scoreString = br.readLine();
+            if (scoreString != null) {
+                String[] strs = scoreString.split(" ");
+                for (int i = 0; i < strs.length; ++i) {
+                    updated.add(Integer.parseInt(strs[i]));
+                }
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("BestScores not found!");
+        } catch (IOException e) {
+            System.out.println("Error while reading bestScores...");
+        }
+        return updated;
+    }    
+
+    private static void writeBest(Set<Integer> updated) {
+        StringBuilder sb = new StringBuilder();
+        List<Integer> upd = new ArrayList<>(updated);
+        Collections.sort(upd);
+        try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(Files.newOutputStream(Paths.get("updated"))))) {
+            for (Integer score: upd) {
+                sb.append(score).append(" ");
+            }
+            bw.write(sb.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }        
     }
 
     private static void writeBest(int[] bestScores) {

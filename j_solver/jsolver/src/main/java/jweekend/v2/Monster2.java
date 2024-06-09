@@ -34,4 +34,5 @@ public class Monster2 {
     public static int compare(Monster2 m1, Monster2 m2, int heroPower) {
         return m1.value(heroPower) > m2.value(heroPower) ? 1 : -1;
     }    
+
 }
