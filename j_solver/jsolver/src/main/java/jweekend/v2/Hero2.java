@@ -146,15 +146,29 @@ public class Hero2{
         double range = Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
         
         if (values[2] > turnsLeft) return 0;
-        long danger = /*movementFatique(x, y, dangerMap) +*/ dangerMap[x][y] * values[2];
-        double profit = (values[0]  + values[1] * expCoeff)  / (1 + Math.pow(danger, 2));
-        
-    
-        double dangerCoeff = 10000.0;
+        double profit;
+        // double profit = (values[0] +  values[1] * expCoeff) /  (1000 + values[2] * dangerMap[x][y]);
 
-        if (profit == 0 && dangerMap[x][y] / profit > dangerCoeff) {
+        double dangerCoeff = 1000.0;
+
+        long danger = dangerMap[x][y];
+        if (danger > 0) {
             profit = 0;
+        } else {
+            profit = range;
         }
+
+        
+
+        if (danger > 1E6) {
+            profit = 0;
+        } else {
+            profit = (values[0] + values[1]);
+        }
+
+        // if (profit != 0 && dangerMap[x][y] / profit > dangerCoeff) {
+        //     profit = 0;
+        // }
         //profit *= (turnsLeft - defeatTime) / (turnsLeft);
         return profit;
     } 

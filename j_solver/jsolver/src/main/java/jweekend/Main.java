@@ -34,14 +34,14 @@ public class Main {
         boolean[] improved = new boolean[50];
         Set<Integer> updated = loadUpdated(50);
 
-        int part = 2;
-        int t = 1;
+        int part = 1;
+        int t = 2;
         if (part == 1) {
             
             double[] params = new double[]{0, 0, 0, 0, 0};
             for (int k = 0; k < 100; ++k) {
                 for (int i = 1; i <= 25; ++i) {
-                    int res = compute("test\\" + i + "\\input", i, bestScores, improved, params); 
+                    int res = compute("/home/nr/prj/code-weekend/j_solver/jsolver/test/" + i + "/input", i, bestScores, improved, params); 
                     System.out.println(i + " " + res);
                 }
             }
@@ -57,14 +57,13 @@ public class Main {
         } else {
             double[] params = new double[]{0, 0, 0, 0, 0};
             for (int k = 0; k < 1; ++k) {
-                for (int i = 26; i <= 50; ++i) {
-                    int res = compute2("test\\" + i + "\\input", i, bestScores, improved, params, updated); 
+                for (int i = 25; i <= 50; ++i) {
+                    int res = compute2("/home/nr/prj/code-weekend/j_solver/jsolver/test/" + i + "/input", i, bestScores, improved, params, updated); 
                     if (t == 2 && res > oldBest[i-1]) 
-                        System.out.println(res * 1.0 / oldBest[i-1]);
+                        System.out.println("Task " + i + " result was improved from " + oldBest[i-1] + " to " + res);
                     else 
-                        System.out.println(i + "  " + res);
+                        System.out.println("Task " + i + " not improved " + res + "/" + oldBest[i-1]);
                 }
-
             }
     
             for (int i = 25; i < 50; ++i) {
@@ -72,8 +71,8 @@ public class Main {
                     System.out.println("Task " + (i + 1) + " result was improved:" + oldBest[i] + " to " + bestScores[i]);
                 } 
             }
-            writeBest(bestScores);     
-            writeBest(updated);       
+            writeBest(bestScores);
+            writeBest(updated);
         }
 
         System.out.println("End!");
@@ -130,11 +129,8 @@ public class Main {
             if (res > bestScores[task-1]) {
                 bestScores[task-1] = res;
                 improved[task-1] = true;
-
             } 
-            solver.writeSolution(objectMapper, "target\\"+task+".json");
-
-                
+            solver.writeSolution(objectMapper, "target/"+task+".json");
         } catch( IOException e) {
             e.printStackTrace();
         }
@@ -191,20 +187,22 @@ public class Main {
             hero.x = x;
             hero.y = y;
             Solver2 solver = new Solver2(hero, monsters, w, h, numTurns);
-            //solver.solveWithNClosest(2);
-            //solver.solveSeekingRandomPos();
-            solver.solveSeekingBestPos();
+            // solver.solveWithNClosest(2);
+            solver.solveSeekingRandomPos();
+            // solver.solveTask50();
+            // solver.solveSeekingBestPos();
+
+            // solver.solveTask36();
+            // solver.solveSeekingBestPosInRange();
             res = (int) hero.gold; 
             if (res > bestScores[task-1]) {
                 bestScores[task-1] = res;
                 improved[task-1] = true;
                 updated.add(task);
-                solver.writeSolution(objectMapper, "target\\"+task+".json");                 
+                solver.writeSolution(objectMapper, "target/"+task+".json");                 
             } 
 
             //System.out.println(hero.gold +" " + hero.fatique);
-
-                
         } catch( IOException e) {
             e.printStackTrace();
         }

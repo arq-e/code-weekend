@@ -55,7 +55,7 @@ public class Solver2 {
     public int[] getBestRandomPos(int n, int maxSteps) {
         boolean[][] used = new boolean[width+1][height+1];
         used[0][0] = true;
-        if (n > height * width) n = height * width;
+        if (n > height * width / 10) n = height * width /10;
         int[][] targets = new int[n][2];
         for (int i = 0; i < n; ++i) {
            
@@ -110,8 +110,249 @@ public class Solver2 {
             if (monsterAlive.size() <= 0) break;
             int[] pos = null;
             //pos = pickBestPosFromRange(hero.r);
+            // int steps = 1;
             while (pos == null) {
-                pos = getBestRandomPos(1000, 5);
+                pos = getBestRandomPos(100000, 100);
+            }
+                
+            moveToPosition(pos[0], pos[1]);
+                //if (heatMap[pos[1]][pos[2]] != pos[0])
+                //    continue;
+
+            if (turnsLeft <= 0) break;
+            clearAtPosition(catchMonsters(), pos, false);
+        }
+    }
+
+
+
+    public void solveTask36() {
+        loadDanger();
+        setMonsters();
+        int[][] targets = new int[15][2];
+
+        targets[0][0] = 1;
+        targets[0][1] = 950;
+        targets[1][0] = 188;
+        targets[1][1] = 950;
+        targets[2][0] = 188;
+        targets[2][1] = 50;
+        targets[3][0] = 313;
+        targets[3][1] = 50;
+        targets[4][0] = 313;
+        targets[4][1] = 950;
+        targets[5][0] = 438;
+        targets[5][1] = 950;
+        targets[6][0] = 438;
+        targets[6][1] = 50;
+        targets[7][0] = 563;
+        targets[7][1] = 50;
+        targets[8][0] = 563;
+        targets[8][1] = 950;
+        targets[9][0] = 688;
+        targets[9][1] = 950;
+        targets[10][0] = 688;
+        targets[10][1] = 50;
+        targets[11][0] = 813;
+        targets[11][1] = 50;
+        targets[12][0] = 813;
+        targets[12][1] = 950;
+        targets[13][0] = 938;
+        targets[13][1] = 950;
+        targets[14][0] = 938;
+        targets[14][1] = 50;
+
+        // for (int i = 0; i < targets.length; ++i) {
+        //     targets[i][0] += 25;
+        // }
+
+        for (int i = 0; i < targets.length; ++i) {
+            int[] pos = targets[i];
+            System.out.println(pos[0] + " " + pos[1]);
+            moveToPositionAndClear(pos[0], pos[1]);
+            clearAtPositionWithLimit(catchMonsters(), pos, false, 1000);
+            if (turnsLeft <= 0) { System.out.println(i); break; }
+        }
+
+        while (turnsLeft > 0) {
+            //System.out.println(turnsLeft);
+            if (monsterAlive.size() <= 0) break;
+            int[] pos = null;
+            //pos = pickBestPosFromRange(hero.r);
+            // int steps = 1;
+            while (pos == null) {
+                pos = getBestRandomPos(10, 10);
+            }
+                
+            moveToPosition(pos[0], pos[1]);
+                //if (heatMap[pos[1]][pos[2]] != pos[0])
+                //    continue;
+
+            if (turnsLeft <= 0) break;
+            clearAtPositionWithLimit(catchMonsters(), pos, false, 1000);
+        }
+    }
+
+    
+
+    public void solveTask50() {
+        loadDanger();
+        setMonsters();
+        int[][] targets = new int[300][2];
+        int t = 0;
+        for (int group = 0; group < 5; ++group) {
+            int startY = group * 600;
+            int startX = 0;
+
+            if (group == 0) {
+                for (int col = 1; col <= 7; ++col) {
+                    int y = startY + col * 62;
+                    int startXPos = 0;
+                    int endXPos = 0;
+                    if (col % 2 == 0) {
+                        startXPos = 7;
+                        endXPos = (col > 1) ? 2 : 3;
+                    } else {
+                        startXPos = (col > 1) ? 2 : 3;
+                        endXPos = 7;
+                    }
+                    System.out.println(startXPos + " " + endXPos + " " + t);
+                    if (startXPos < endXPos) {
+                        for (int xPos = startXPos; xPos <= endXPos; ++xPos) {
+                            int x = startX + xPos * 62;
+                            targets[t][0] = y;
+                            targets[t][1] = x;
+                            ++t;
+                        }
+                    } else {
+                        for (int xPos = startXPos; xPos >= endXPos; --xPos) {
+                            int x = startX + xPos * 62;
+                            targets[t][0] = y;
+                            targets[t][1] = x;
+                            ++t;
+                        }
+                    }
+                }
+            } else if (group == 1) {
+                for (int col = 1; col <= 7; ++col) {
+                    int y = startY + col * 62;
+                    int startXPos = 0;
+                    int endXPos = 0;
+                    if (col % 2 != 0) {
+                        startXPos = 7;
+                        endXPos = (col > 6) ? 2 : 3;
+                    } else {
+                        startXPos = (col > 6) ? 2 : 3;
+                        endXPos = 7;
+                    }
+                    System.out.println(startXPos + " " + endXPos + " " + t);
+                    if (startXPos < endXPos) {
+                        for (int xPos = startXPos; xPos <= endXPos; ++xPos) {
+                            int x = startX + xPos * 62;
+                            targets[t][0] = y;
+                            targets[t][1] = x;
+                            ++t;
+                        }
+                    } else {
+                        for (int xPos = startXPos; xPos >= endXPos; --xPos) {
+                            int x = startX + xPos * 62;
+                            targets[t][0] = y;
+                            targets[t][1] = x;
+                            ++t;
+                        }
+                    }
+                }
+            } else if (group == 2) {
+                for (int col = 1; col <= 7; ++col) {
+                    int y = startY + col * 62;
+                    int startXPos = 0;
+                    int endXPos = 0;
+                    if (col % 2 == 0) {
+                        startXPos = 7;
+                        endXPos = (col >= 6) ? 1 : 2;
+                    } else {
+                        startXPos = (col > 6) ? 1 : 2;
+                        endXPos = 7;
+                    }
+                    System.out.println(startXPos + " " + endXPos + " " + t);
+                    if (startXPos < endXPos) {
+                        for (int xPos = startXPos; xPos <= endXPos; ++xPos) {
+                            int x = startX + xPos * 62;
+                            targets[t][0] = y;
+                            targets[t][1] = x;
+                            ++t;
+                        }
+                    } else {
+                        for (int xPos = startXPos; xPos >= endXPos; --xPos) {
+                            int x = startX + xPos * 62;
+                            targets[t][0] = y;
+                            targets[t][1] = x;
+                            ++t;
+                        }
+                    }
+                }
+            } else {
+                for (int col = 1; col <= 7; ++col) {
+                    int y = startY + col * 62;
+                    int startXPos = 0;
+                    int endXPos = 0;
+                    if (col % 2 == 0) {
+                        startXPos = 1;
+                        endXPos = (col > 6) ? 7 : 7;
+                    } else {
+                        startXPos = (col > 6) ? 7 : 7;
+                        endXPos = 1;
+                    }
+                    System.out.println(startXPos + " " + endXPos + " " + t);
+                    if (startXPos < endXPos) {
+                        for (int xPos = startXPos; xPos <= endXPos; ++xPos) {
+                            int x = startX + xPos * 62;
+                            targets[t][0] = y;
+                            targets[t][1] = x;
+                            ++t;
+                        }
+                    } else {
+                        for (int xPos = startXPos; xPos >= endXPos; --xPos) {
+                            int x = startX + xPos * 62;
+                            targets[t][0] = y;
+                            targets[t][1] = x;
+                            ++t;
+                        }
+                    }
+                }
+            }
+            System.out.println(t);
+        }
+        System.out.println(t);
+
+        for (int i = 0; i < targets.length; ++i) {
+            int[] pos = targets[i];
+            // System.out.println("")
+            Monster2 target = null;
+            for (Monster2 m : monsters) {
+                if (m.x == pos[0] && m.y == pos[1]) {
+                    target = m;
+                    break;
+                }
+            }
+            if (target == null) {
+                System.out.println("no target found at" + pos[0] + " " + pos[1]);
+                continue;
+            }
+            moveToAimAtPosition(targets[i][0], targets[i][1], target.range);
+            turnsLeft = hero.destroyMonster(target, turns, turnsLeft, monsterAlive, monsters, dangerMap);
+            // clearAtPosition(catchMonsters(), pos, false);
+            if (turnsLeft <= 0) { System.out.println(i); break; }
+        }
+
+        while (turnsLeft > 0) {
+            //System.out.println(turnsLeft);
+            if (monsterAlive.size() <= 0) break;
+            int[] pos = null;
+            //pos = pickBestPosFromRange(hero.r);
+            // int steps = 1;
+            while (pos == null) {
+                pos = getBestRandomPos(100000, 100);
             }
                 
             moveToPosition(pos[0], pos[1]);
@@ -167,8 +408,9 @@ public class Solver2 {
         for (int i = 0; i <= width; ++i) {
             for (int j = 0; j <= height; ++j) {
                 long danger = dangerMap[i][j] + hero.movementFatique(i, j, dangerMap);
+                if (danger > 1E6) continue;
                 long profit = calculateProfitIntPosition(i, j);
-                if (danger == 0 && profit > maxProfit) {
+                if (danger < 100 && profit > maxProfit) {
                     maxProfit = profit;
                     maxX = i;
                     maxY = j;
@@ -205,13 +447,51 @@ public class Solver2 {
 
 
 
+    public int[] getBestPosInRange(int range, Boolean allow_self) {
+        double max = -1;
+        int maxX = 0;
+        int maxY = 0;
+        for (int i = Math.max(0, hero.x - range); i <= Math.min(width, hero.x + range); ++i) {
+            for (int j = Math.max(0, hero.x - range); j <= Math.min(height, hero.x + range); ++j) {
+                if (!canReach(range, i, j)) {
+                    continue;
+                }
+                double val = 0;
+                for (int k = Math.max(0, i - hero.r); k <= Math.min(width, i + hero.r); ++k) {
+                    for (int l = Math.max(0, j - hero.r); l <= Math.min(height, j + hero.r); ++l) {
+                        if (monstersMap[k][l] > - 1) {
+                            val += hero.calculateProfit(valueMap[i][j], turnsLeft, totalTurns, i, j, dangerMap);
+                        }
+                    }
+                }
+                if (val > max)  {
+                    if (allow_self || i != hero.x || j != hero.y) {
+                        max = val;
+                        maxX = i;
+                        maxY = j;
+                    }
+                }
+                }
+            }
+        if (max < 1E-6 &&range <= Math.max(width, height)) {
+            return getBestPosInRange(range * 2, false);
+        }
+        // System.out.println("maxX " + maxX + " maxY " + maxY + " max " + max);
+        return new int[]{maxX, maxY};
+    }
+
     public void solveSeekingBestPos() {
         loadDanger();
         loadProfit(hero.r);
         setMonsters();
         int prevTurns = turnsLeft;
+        // moveToPosition(950, 0);
+        // moveToPosition(0, 950);
+        // moveToPosition(150, 950);
+        // System.out.println(" hero.fatique " + hero.fatique + " turnsLeft " + turnsLeft);
         while (turnsLeft > 0) {
             //System.out.println(turnsLeft + " " + hero.fatique + " " + dangerMap[48][62]);
+            // System.out.println(turnsLeft + " " + hero.fatique);
             if (monsterAlive.size() <= 0) break;
             int[] pos = null;
             //pos = getBestPos();
@@ -226,9 +506,50 @@ public class Solver2 {
             if (prevTurns == turnsLeft || hero.fatique > maxGold * 1000) {
                 System.out.println("Path not Found!");
                 return;
-            } 
+            }
+            if (hero.fatique > maxGold * 1000) {
+                System.out.println("No more gold!");
+                return;
+            }
             loadProfit(hero.r);
             prevTurns = turnsLeft;
+        }
+    }
+
+    Boolean stop() {
+        return hero.fatique > maxGold * 1000 || turnsLeft <= 0;
+    }
+
+    public void solveSeekingBestPosInRange() {
+        loadDanger();
+        loadProfit(hero.r);
+        setMonsters();
+        moveToPosition(950, 100);
+        while (turnsLeft > 0) {
+
+            if (monsterAlive.size() <= 0) break;
+            int[] pos = getBestPosInRange(hero.s, true);
+            PriorityQueue<Integer> pq = catchMonsters();
+            int level = hero.level;
+            // System.out.println(hero.x + " " + hero.y + " " + pos[0] + " " + pos[1]);
+            while (pos[0] == hero.x && pos[1] == hero.y && !stop()) {
+                if (pq.isEmpty()) {
+                    pos = getBestPosInRange(hero.s, false);
+                    break;
+                }
+                Monster2 m = monsters.get(pq.poll());
+                turnsLeft = hero.destroyMonster(m, turns, turnsLeft, monsterAlive, monsters, dangerMap);
+                clearDanger(m);
+                clearProfit(m, hero.r);
+                if (level != hero.level) {
+                    pq = catchMonsters();
+                    loadProfit(hero.r);
+                    level = hero.level;
+                }
+                pos = getBestPosInRange(hero.s, true);
+            }
+            if (stop() || !moveToPosition(pos[0], pos[1])) return;
+
         }
     }
 
@@ -320,9 +641,11 @@ public class Solver2 {
         PriorityQueue<Integer> pq = new PriorityQueue<>((a, b) -> (Monster2.compare(monsters.get(a), monsters.get(b), hero.p)));
         for (int k = Math.max(0, hero.x - hero.r); k <= Math.min(width, hero.x + hero.r); ++k) {
             for (int l = Math.max(0, hero.y - hero.r); l <= Math.min(height, hero.y + hero.r); ++l) {
-                if (monstersMap[k][l] > -1 && 
-                    Math.pow(hero.x - k, 2) + Math.pow(hero.y - l, 2) <= Math.pow(hero.r, 2) ) {
-                    pq.offer(monstersMap[k][l]);
+                if (canReach(hero.r, k, l)) {
+                    if (monstersMap[k][l] > -1 && 
+                        Math.pow(hero.x - k, 2) + Math.pow(hero.y - l, 2) <= Math.pow(hero.r, 2) - 1E-6 ) {
+                        pq.offer(monstersMap[k][l]);
+                    }
                 }
             }
         }
@@ -353,29 +676,166 @@ public class Solver2 {
     }
 
 
+    public boolean canReachTarget(int range, int x, int y, int a, int b) {
+        if (x < 0 || y < 0 || x > this.width || y > this.height) return false;
+        return Math.pow(a - x, 2) + Math.pow(b - y, 2) <= Math.pow(range, 2);
+    }
 
-    public void moveToPosition(int x, int y) {
-        if (hero.x == x && hero.y == y) return;
+    public Boolean moveToAimAtPosition(int x, int y, int evadeRange) {
+        if (hero.x == x && hero.y == y) return false;
         double numOfTurns = Math.sqrt(Math.pow(x - hero.x, 2) + Math.pow(y - hero.y, 2)) / hero.s;
+        if (numOfTurns < 1) numOfTurns = 1;
+        if (numOfTurns > turnsLeft) return false;
+        int dx = (int) ((x - hero.x) / numOfTurns);
+        int dy = (int) ((y - hero.y) / numOfTurns);
+
+        if (canReach(hero.r, x, y) || canReach(evadeRange, x, y)) return true;
+
+        while (numOfTurns-- > 1) {
+            int proposed_dx = dx;
+            int proposed_dy = dy;
+            while(canReachTarget(evadeRange, hero.x + proposed_dx, hero.y + proposed_dy, x, y)) {
+                if (proposed_dx == 0 && proposed_dy == 0) break;
+                if (Math.abs(proposed_dx) > Math.abs(proposed_dy)) {
+                    if (proposed_dx > 0) {
+                        --proposed_dx;
+                    } else {
+                        ++proposed_dx;
+                    }
+                } else {
+                    if (proposed_dy > 0) {
+                        --proposed_dy;
+                    } else {
+                        ++proposed_dy;
+                    }
+                }
+            }
+            moveTurn(proposed_dx, proposed_dy);
+            turnsLeft--;
+            if (turnsLeft <= 0) return false;
+            Turn nextTurn = new Turn(hero.x, hero.y);
+            turns.add(nextTurn);
+            if (canReach(hero.r, x, y)) return true;
+        }
+        if (canReach(hero.s, x, y)) {
+            int proposed_dx = x - hero.x;
+            int proposed_dy = y - hero.y;
+            while(canReachTarget(evadeRange, hero.x + proposed_dx, hero.y + proposed_dy, x, y)) {
+                int new_dx = proposed_dx;
+                int new_dy = proposed_dy;
+                if (proposed_dx == 0 && proposed_dy == 0) break;
+                if (Math.abs(proposed_dx) > Math.abs(proposed_dy)) {
+                    if (proposed_dx > 0) {
+                        --proposed_dx;
+                    } else {
+                        ++proposed_dx;
+                    }
+                } else {
+                    if (proposed_dy > 0) {
+                        --proposed_dy;
+                    } else {
+                        ++proposed_dy;
+                    }
+                }
+                if (!canReachTarget(hero.r, hero.x + proposed_dx, hero.y + proposed_dy, x, y)) {
+                    proposed_dx = new_dx;
+                    proposed_dy = new_dy;
+                    break;
+                }
+            }
+            hero.x += proposed_dx;
+            hero.y += proposed_dy;
+
+            if (!canReach(hero.r, x, y)) {
+                System.out.println("can't reach " + (totalTurns-turnsLeft));
+            }
+            // hero.x = x;
+            // hero.y = y;
+            hero.fatique += dangerMap[hero.x][hero.y];
+            turnsLeft--;
+            if (turnsLeft < 0) return false;
+            Turn nextTurn = new Turn(hero.x, hero.y);
+            turns.add(nextTurn);                   
+        }
+        return true;
+    }
+
+    public Boolean moveToPosition(int x, int y) {
+        if (hero.x == x && hero.y == y) return false;
+        double numOfTurns = Math.sqrt(Math.pow(x - hero.x, 2) + Math.pow(y - hero.y, 2)) / hero.s;
+        if (numOfTurns < 1) numOfTurns = 1;
+        if (numOfTurns > turnsLeft) return false;
         int dx = (int) ((x - hero.x) / numOfTurns);
         int dy = (int) ((y - hero.y) / numOfTurns);
 
         while (numOfTurns-- > 1) {
             moveTurn(dx, dy);
             turnsLeft--;
-            if (turnsLeft <= 0) return;
+            if (turnsLeft <= 0) return false;
             Turn nextTurn = new Turn(hero.x, hero.y);
             turns.add(nextTurn);
         }
-        if (hero.x != x && hero.y != y && canReach(hero.s, x, y)) {
+        if (canReach(hero.s, x, y)) {
             hero.x = x;
             hero.y = y;
             hero.fatique += dangerMap[hero.x][hero.y];
             turnsLeft--;
-            if (turnsLeft < 0) return;
+            if (turnsLeft < 0) return false;
             Turn nextTurn = new Turn(hero.x, hero.y);
             turns.add(nextTurn);                   
-        }      
+        }
+        return true;
+    }
+
+    public Boolean moveToPositionAndClear(int x, int y) {
+        if (hero.x == x && hero.y == y) return false;
+        double numOfTurns = Math.sqrt(Math.pow(x - hero.x, 2) + Math.pow(y - hero.y, 2)) / hero.s;
+        // if (numOfTurns < 1) numOfTurns = 1;
+        // if (numOfTurns > turnsLeft) return false;
+        int dx = (int) ((x - hero.x) / numOfTurns);
+        int dy = (int) ((y - hero.y) / numOfTurns);
+
+        while (numOfTurns-- > 1) {
+            moveTurn(dx, dy);
+            System.out.println("clearing at " + hero.x+ " " + hero.y);
+            turnsLeft--;
+            if (turnsLeft <= 0) return false;
+            Turn nextTurn = new Turn(hero.x, hero.y);
+            turns.add(nextTurn);
+            clearAtPositionWithLimit(catchMonsters(), new int[] {hero.x, hero.y}, false, 1000);
+        }
+        if ((hero.x != x || hero.y != y) && canReach(hero.s, x, y)) {
+            hero.x = x;
+            hero.y = y;
+            hero.fatique += dangerMap[hero.x][hero.y];
+            turnsLeft--;
+            if (turnsLeft < 0) return false;
+            Turn nextTurn = new Turn(hero.x, hero.y);
+            turns.add(nextTurn);                   
+        }
+        return true;
+    }
+
+    public int clearAtPositionWithLimit(PriorityQueue<Integer> pq, int[] value, boolean updateProfits, int hp_limit) {
+        int res = 0;
+        while (pq.size() > 0) {
+            int target = pq.poll();
+            Monster2 m = monsters.get(target);
+            int hp = m.hp;
+            if (hp > hp_limit) {
+                continue;
+            }
+            if (hp / hero.p > turnsLeft)
+                return res;
+            turnsLeft = hero.destroyMonster(m, turns, turnsLeft, monsterAlive, monsters, dangerMap);
+            clearDanger(m);
+            if(updateProfits) {
+                clearProfit(m, hero.r);
+            }
+            monstersMap[m.x][m.y] = -1;
+        }
+        return res;
+
     }
 
     public void moveTurn(int dx, int dy) {
