@@ -11,13 +11,20 @@ def solve(path: str, task_id: int, solver_id: int, send = False) -> str:
   #solution_path = os.path.join("solutions", f"{task_id}", f"{base}", f"{solver_id}")
   input_path = os.path.abspath(os.path.join("tasks", f"{task_id}", "input"))
   output_path = os.path.abspath(os.path.join("tasks", f"{task_id}", "last_output"))
+  scores_path = os.path.abspath(os.path.join("tasks", f"{task_id}", "scores"))
 
-  result = subprocess.run([f'{path}', '-i', f'{input_path}', '-o', f'{output_path}', '-s', f'{solver_id}'], capture_output=True)
-  print(result.args)
+  best_score = 0
+  with open(scores_path, 'r') as f:
+    best_score = split(f.read())[task_id-1]
+
+  result = subprocess.run([f'{path}', '-i', f'{input_path}', '-o', f'{output_path}', '-s', f'{solver_id}', '-b', f'{best_score}'], capture_output=True)
+  for line in result.stdout.splitlines():
+    if "monsters" in bytes.decode(line):
+      print (f"{line}")
   if result.returncode != 0:
     print(f"Failed to solve task {task_id} with solver {path} {solver_id}")
-    print(result.stdout)
-    print(result.stderr)
+    # print(result.stdout)
+    # print(result.stderr)
     return
 
   solution = None
@@ -27,7 +34,7 @@ def solve(path: str, task_id: int, solver_id: int, send = False) -> str:
   if send and solution is not None:
     submit(task_id, solution, wait=True, save=True)
   print(f"Solution for task {task_id} with solver {path} {solver_id}")
-  print(solution)
+  # print(solution)
 
 def main():
     parser = argparse.ArgumentParser("Solve task with the given solver.")
@@ -42,6 +49,7 @@ def main():
     max_id = max(args.task[0], args.task[1])
 
     solver = args.solver[0]
+    
 
     for task_id in range(min_id, max_id+1):
       solution = solve(solver, task_id, args.id, args.submit)
