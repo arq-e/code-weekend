@@ -18,26 +18,26 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import codeweekend.model.GameNew;
-import codeweekend.model.HeroNew;
-import codeweekend.model.MonsterNew;
+import codeweekend.model.Game;
+import codeweekend.model.Hero;
+import codeweekend.model.Monster;
 import codeweekend.model.Turn;
 
 public class IOUtils {
-    private static final String INPUT_PATH = "test/";
-    private static final String OUTPUT_PATH = "target/";
+    private static final String INPUT_PATH = "tasks/";
+    private static final String OUTPUT_PATH = "solutions/";
     private static final String ANNEALING_ROUTES_PATH = "paths/";
     private static final String ANNEALING_SCORES_PATH = "scores/";
     private static final String BEST_SCORES_PATH = "bestScores";
     private static final int NUM_OF_TESTS = 50;
 
-    public static GameNew parseInput(ObjectMapper objectMapper,int task){
+    public static Game parseInput(ObjectMapper objectMapper,int task, Hero hero){
         try {
             JsonNode node = objectMapper.readTree(new File(INPUT_PATH + task + "/input"));
             Iterator<Entry<String, JsonNode>> it = node.fields();
 
-            HeroNew hero = null;
-            List<MonsterNew> monsters = new ArrayList<>();
+            Hero taskHero = null;
+            List<Monster> monsters = new ArrayList<>();
 
             int x = 0;
             int y = 0;
@@ -49,7 +49,7 @@ public class IOUtils {
                 Entry<String, JsonNode> entry = it.next();
                 switch (entry.getKey()) {
                     case "hero":
-                        hero = objectMapper.readValue(entry.getValue().toString(), HeroNew.class);
+                        taskHero = objectMapper.readValue(entry.getValue().toString(), Hero.class);
                         break;
                     case "start_x":
                         x = Integer.parseInt(entry.getValue().toString());
@@ -67,7 +67,7 @@ public class IOUtils {
                         numTurns = Integer.parseInt(entry.getValue().toString());
                         break;                
                     case "monsters":
-                        monsters = objectMapper.readValue(entry.getValue().toString(), new TypeReference<List<MonsterNew>>(){});
+                        monsters = objectMapper.readValue(entry.getValue().toString(), new TypeReference<List<Monster>>(){});
                         break;
                     default:
                         break;
@@ -77,10 +77,10 @@ public class IOUtils {
             for (int i = 0; i < monsters.size(); ++i) {
                 monsters.get(i).setName(i);
             }
+            hero.copy(taskHero);
             hero.initBaseStats(x, y);
-            GameNew game = new GameNew(task, w, h, numTurns);
+            Game game = new Game(task, w, h, numTurns);
             game.init( monsters);
-            game.hero = hero;
                 
             return game;
         } catch( IOException e) {

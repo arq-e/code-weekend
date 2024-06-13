@@ -6,16 +6,16 @@ import java.util.Arrays;
 import java.util.List;
 
 import codeweekend.io.IOUtils;
-import codeweekend.model.GameNew;
-import codeweekend.model.HeroNew;
-import codeweekend.model.MonsterNew;
+import codeweekend.model.Game;
+import codeweekend.model.Hero;
+import codeweekend.model.Monster;
 import codeweekend.model.Turn;
 import codeweekend.scoring.Scoring;
 
-public class AnnealingSolver extends SolverNew{
+public class AnnealingSolver extends Solver{
 
     @Override
-    public List<Turn> solve(HeroNew hero, GameNew rules, Scoring scoring) {
+    public List<Turn> solve(Hero hero, Game rules, Scoring scoring) {
 
         StringBuilder sb = new StringBuilder();
         int idx[] = IOUtils.readAnnealingPath(rules.getTestNum());
@@ -81,7 +81,7 @@ public class AnnealingSolver extends SolverNew{
     }
 
 
-    public static int[] get_indices(List<MonsterNew> monsters) {
+    public static int[] get_indices(List<Monster> monsters) {
         int idx[] = new int[monsters.size()];
         for (int i = 0; i < monsters.size(); ++i) {
             idx[i] = i;
@@ -110,7 +110,7 @@ public class AnnealingSolver extends SolverNew{
         return res;
     }
 
-    public int[] calc_score(List<Turn> solution, int[] idx, HeroNew hero, GameNew rules, Scoring scoring, int[] path) {
+    public int[] calc_score(List<Turn> solution, int[] idx, Hero hero, Game rules, Scoring scoring, int[] path) {
 
         int maxBeaten = solveByGivenOrder(idx, hero, rules);
         int res = hero.getGold();
@@ -126,12 +126,12 @@ public class AnnealingSolver extends SolverNew{
         return new int[]{res, maxBeaten};
     }
 
-    public int solveByGivenOrder(int[] idx, HeroNew hero, GameNew rules) {
-        List<MonsterNew> monsters = rules.getMonsters();
+    public int solveByGivenOrder(int[] idx, Hero hero, Game rules) {
+        List<Monster> monsters = rules.getMonsters();
         int i = 0;
         
         while (rules.getTurnsLeft() > 0 && i < idx.length) {
-            MonsterNew target = monsters.get(idx[i]);
+            Monster target = monsters.get(idx[i]);
             hero.moveToMonster(target, rules, false);
             hero.destroy(target, rules, false);
             ++i;

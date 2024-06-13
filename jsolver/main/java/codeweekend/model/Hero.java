@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class HeroNew {
+public class Hero {
     private static final int BASE_EXP = 1000;
     @JsonProperty("base_speed")
     private int baseS;
@@ -31,12 +31,12 @@ public class HeroNew {
     private long fatique;
     private List<Turn> turns;
 
-    public HeroNew() {
+    public Hero() {
 
     }
 
 
-    public HeroNew(int baseS, int baseP, int baseR, int speedC, int powerC, int rangeC, int x, int y, int level, int s, int p, int r, int expToUp, int gold, long fatique, List<Turn> turns) {
+    public Hero(int baseS, int baseP, int baseR, int speedC, int powerC, int rangeC, int x, int y, int level, int s, int p, int r, int expToUp, int gold, long fatique, List<Turn> turns) {
         this.baseS = baseS;
         this.baseP = baseP;
         this.baseR = baseR;
@@ -69,8 +69,13 @@ public class HeroNew {
         turns = new ArrayList<>();
     }
 
-    public void copy(HeroNew hero) {
-        
+    public void copy(Hero hero) {
+        this.baseS = hero.getBaseS();
+        this.baseP = hero.getBaseP();
+        this.baseR = hero.getBaseR();
+        this.speedC = hero.getSpeedC();
+        this.powerC = hero.getPowerC();
+        this.rangeC = hero.getRangeC();
     }
 
     public void earnGold(int gold) {
@@ -98,7 +103,10 @@ public class HeroNew {
         fatique += amount;
     }
  
-    public void destroy(MonsterNew monster, GameNew rules, boolean getFatique) {
+    public void destroy(Monster monster, Game rules, boolean getFatique) {
+        if (!rules.canReach(r, x, y, monster.getX(), monster.getY())) {
+            moveToMonster(monster, rules, getFatique);
+        }
         int hp = monster.getHp();
         int turnsSpent = 0;
         while (hp > 0) {
@@ -132,10 +140,10 @@ public class HeroNew {
         rules.subtractTurns(turnsSpent);
     }
 
-    public void takeDamage(GameNew rules) {
-        List<MonsterNew> monsters = rules.getMonsters();
+    public void takeDamage(Game rules) {
+        List<Monster> monsters = rules.getMonsters();
         for (int name : rules.getMonsterAlive()) {
-            MonsterNew m = monsters.get(name);
+            Monster m = monsters.get(name);
             double range = Math.sqrt(Math.pow(m.getX() - x, 2) + Math.pow(m.getY() - y, 2));
             if (range <= m.getRange()) {
                 this.fatique += m.getAttack();
@@ -143,11 +151,11 @@ public class HeroNew {
         }
     }
 
-    public boolean moveToMonster(MonsterNew monster, GameNew rules, boolean getFatique) {
+    public boolean moveToMonster(Monster monster, Game rules, boolean getFatique) {
         return moveToPosition(monster.getX(), monster.getY(), rules, false, getFatique);
     }
 
-    public boolean moveToPosition(int posX, int posY, GameNew rules, boolean stepIn, boolean getFatique) {
+    public boolean moveToPosition(int posX, int posY, Game rules, boolean stepIn, boolean getFatique) {
         if (!stepIn && rules.canReach(r, x, y, posX, posY)) return true;
 
         double numOfTurns = rules.calcRange(x, y, posX, posY) / this.s;
@@ -174,27 +182,29 @@ public class HeroNew {
                 return true;
             }
         }
-        if ((posX!= x || posY != y) && rules.canReach(s, x, y, posX, posY)) {
-            setPosition(posX, posY);
+        if (posX!= x || posY != y) {
+            if (rules.canReach(s, x, y, posX, posY)) {
+                setPosition(posX, posY);
 
-            if (getFatique) {
-                takeDamage(rules);
-            }
+                if (getFatique) {
+                    takeDamage(rules);
+                }
 
-            ++turnsSpent;
-            if (turnsSpent > rules.getTurnsLeft()) {
-                rules.setTurnsLeft(0);
-                return false;
-            }     
-            Turn nextTurn = new Turn(x, y);
-            turns.add(nextTurn);                   
+                ++turnsSpent;
+                if (turnsSpent > rules.getTurnsLeft()) {
+                    rules.setTurnsLeft(0);
+                    return false;
+                }     
+                Turn nextTurn = new Turn(x, y);
+                turns.add(nextTurn); 
+            }                
         }
         
         rules.subtractTurns(turnsSpent);
         return true;
     }
 
-    public void move(int dx, int dy, GameNew rules) {
+    public void move(int dx, int dy, Game rules) {
         x = rules.adjustPosition(x, dx, 'w');
         y = rules.adjustPosition(y, dy, 'h');
     }
@@ -204,7 +214,7 @@ public class HeroNew {
         this.y = y;
     }
 
-    public long movementFatique(int posX, int posY, GameNew rules) {
+    public long movementFatique(int posX, int posY, Game rules) {
 
         if (posX == x && posY == y) return 0;
 
@@ -224,7 +234,7 @@ public class HeroNew {
         return fate;
     }
 
-    public Boolean moveToAimAtPosition(GameNew rules, int tx, int ty, int evadeRange) {
+    public Boolean moveToAimAtPosition(Game rules, int tx, int ty, int evadeRange) {
         if (x == tx && y == ty) return false;
         double numOfTurns = Math.sqrt(Math.pow(tx - x, 2) + Math.pow(ty - y, 2)) / s;
         if (numOfTurns < 1) numOfTurns = 1;
@@ -302,8 +312,8 @@ public class HeroNew {
         return true;
     }
 
-    public HeroNew clone() {
-        return new HeroNew(baseS, baseP, baseR, speedC, powerC, rangeC, x, y, level, s, p, r, expToUp, gold, fatique, new ArrayList<Turn>());
+    public Hero clone() {
+        return new Hero(baseS, baseP, baseR, speedC, powerC, rangeC, x, y, level, s, p, r, expToUp, gold, fatique, new ArrayList<Turn>());
     }
 
     public void clearTurns() {
@@ -314,16 +324,8 @@ public class HeroNew {
         return this.x;
     }
 
-    public void setX(int x) {
-        this.x = x;
-    }
-
     public int getY() {
         return this.y;
-    }
-
-    public void setY(int y) {
-        this.y = y;
     }
 
     public int getLevel() {
@@ -355,4 +357,27 @@ public class HeroNew {
         return this.turns;
     }
 
+
+    public int getBaseS() {
+        return this.baseS;
+    }
+
+    public int getBaseP() {
+        return this.baseP;
+    }
+    public int getBaseR() {
+        return this.baseR;
+    }
+
+    public int getSpeedC() {
+        return this.speedC;
+    }
+
+    public int getPowerC() {
+        return this.powerC;
+    }
+
+    public int getRangeC() {
+        return this.rangeC;
+    }
 }

@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import codeweekend.model.GameNew;
-import codeweekend.model.HeroNew;
-import codeweekend.model.MonsterNew;
+import codeweekend.model.Game;
+import codeweekend.model.Hero;
+import codeweekend.model.Monster;
 import codeweekend.model.Turn;
 import codeweekend.scoring.Scoring;
 
-public class GreedySolver extends SolverNew {
+public class GreedySolver extends Solver {
     private boolean destroyAllInRange = false;
     private int targetingMethod = 1;
 
@@ -20,10 +20,10 @@ public class GreedySolver extends SolverNew {
     }
 
     @Override
-    public List<Turn> solve(HeroNew hero, GameNew rules, Scoring scoring) {
+    public List<Turn> solve(Hero hero, Game rules, Scoring scoring) {
 
         while (rules.getTurnsLeft() > 0) {
-            MonsterNew target = null;
+            Monster target = null;
             switch (targetingMethod) {
                 case 1:
                     target = selectClosestMonster(rules, hero);

@@ -4,18 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import codeweekend.model.GameNew;
-import codeweekend.model.HeroNew;
-import codeweekend.model.MonsterNew;
+import codeweekend.model.Game;
+import codeweekend.model.Hero;
+import codeweekend.model.Monster;
 import codeweekend.model.Turn;
 import codeweekend.scoring.Scoring;
 
-public abstract class SolverNew {
+public abstract class Solver {
     private static final int MAX_HP_TO_ATTACK = 100000;
 
-    public abstract List<Turn> solve(HeroNew hero, GameNew rules, Scoring scoring);
+    public abstract List<Turn> solve(Hero hero, Game rules, Scoring scoring);
 
-    public static long calculateProfitInPosition(int x, int y, GameNew rules, HeroNew hero) {
+    public static long calculateProfitInPosition(int x, int y, Game rules, Hero hero) {
         double expCoeff = 1.0;
         
         //double turnsRemainingFrac = rules.getTurnsLeft() * 1.0 / rules.getMaxTurns();
@@ -37,7 +37,7 @@ public abstract class SolverNew {
         return profit;
     }
 
-    public static long calculateProfitOfMonster(MonsterNew m, GameNew rules, HeroNew hero) {
+    public static long calculateProfitOfMonster(Monster m, Game rules, Hero hero) {
         double expCoeff = 1.0;
         
         //double turnsRemainingFrac = rules.getTurnsLeft() * 1.0 / rules.getMaxTurns();
@@ -55,12 +55,12 @@ public abstract class SolverNew {
         return profit;
     }
 
-    public static PriorityQueue<Integer> catchMonsters(GameNew rules, int range, int x, int y) {
-        List<MonsterNew> monsters = rules.getMonsters();
-        PriorityQueue<Integer> pq = new PriorityQueue<>((a, b) -> (MonsterNew.compare(monsters.get(a), monsters.get(b))));
+    public static PriorityQueue<Integer> catchMonsters(Game rules, int range, int x, int y) {
+        List<Monster> monsters = rules.getMonsters();
+        PriorityQueue<Integer> pq = new PriorityQueue<>((a, b) -> (Monster.compare(monsters.get(a), monsters.get(b))));
 
         for (int name : rules.getMonsterAlive()) {
-            MonsterNew m = monsters.get(name);
+            Monster m = monsters.get(name);
             double dist = rules.calcRange(x, y, m.getX(), m.getY());
             if (dist <= range && m.getHp() < MAX_HP_TO_ATTACK) {
                 pq.offer(name);
@@ -70,15 +70,15 @@ public abstract class SolverNew {
         return pq;
     }
 
-    public static PriorityQueue<Integer> catchMonsters(GameNew rules, HeroNew hero) {
+    public static PriorityQueue<Integer> catchMonsters(Game rules, Hero hero) {
         return catchMonsters(rules, hero.getR(), hero.getX(), hero.getY());
     }
 
-    public static void clearAtPosition(PriorityQueue<Integer> pq, GameNew rules, HeroNew hero, boolean updateProfits) {
+    public static void clearAtPosition(PriorityQueue<Integer> pq, Game rules, Hero hero, boolean updateProfits) {
         int level = hero.getLevel();
         while (pq.size() > 0) {
             int target = pq.poll();
-            MonsterNew m = rules.getMonsters().get(target);
+            Monster m = rules.getMonsters().get(target);
             if (m.getHp() * 1.0 / hero.getP() > rules.getTurnsLeft() && pq.size() > 0)
                 continue;
             hero.destroy(m, rules, true);
@@ -90,20 +90,20 @@ public abstract class SolverNew {
 
     /* ---------------------------------------------------------------------------------------------------- */
 
-    public Boolean moveToPositionAndClear(GameNew rules, HeroNew hero, int x, int y) {
+    public Boolean moveToPositionAndClear(Game rules, Hero hero, int x, int y) {
         hero.moveToPosition(x, y, rules, true, true);
         clearAtPositionWithLimit(catchMonsters(rules, hero), rules, hero, false, 1000);
 
         return true;
     }
 
-    public int clearAtPositionWithLimit(PriorityQueue<Integer> pq, GameNew rules, HeroNew hero, boolean updateProfits, int hpLimit) {
-        List<MonsterNew> monsters = rules.getMonsters();
+    public int clearAtPositionWithLimit(PriorityQueue<Integer> pq, Game rules, Hero hero, boolean updateProfits, int hpLimit) {
+        List<Monster> monsters = rules.getMonsters();
 
         int res = 0;
         while (pq.size() > 0) {
             int target = pq.poll();
-            MonsterNew m = monsters.get(target);
+            Monster m = monsters.get(target);
             int hp = m.getHp();
             if (hp > hpLimit) {
                 continue;
@@ -117,10 +117,10 @@ public abstract class SolverNew {
     }
 
     /* ------------------------------------------------------------------- Greedy/Random Target Selections --------------------------------------------------------------- */
-        public static MonsterNew SelectMostProfitableMonster(GameNew rules, HeroNew hero) {
-        List<MonsterNew> monsters = rules.getMonsters();
+        public static Monster SelectMostProfitableMonster(Game rules, Hero hero) {
+        List<Monster> monsters = rules.getMonsters();
 
-        MonsterNew closest = rules.getMonsters().get(0);
+        Monster closest = rules.getMonsters().get(0);
         double max = 0;
         for (int name : rules.getMonsterAlive()) {
             double rProfit = calculateProfitOfMonster(monsters.get(name), rules, hero);
@@ -134,13 +134,13 @@ public abstract class SolverNew {
         return closest;     
     }
 
-    public static MonsterNew selectClosestMonster(GameNew rules, HeroNew hero) {
-        List<MonsterNew> monsters = rules.getMonsters();
+    public static Monster selectClosestMonster(Game rules, Hero hero) {
+        List<Monster> monsters = rules.getMonsters();
 
-        MonsterNew closest = monsters.get(0);
+        Monster closest = monsters.get(0);
         double min = Integer.MAX_VALUE;
         for (int name : rules.getMonsterAlive()) {
-            MonsterNew m = monsters.get(name);
+            Monster m = monsters.get(name);
             double dist = rules.calcRange(hero.getX(), hero.getY(), m.getX(), m.getY());
             
             if ((dist / hero.getR()) < min) {
@@ -152,8 +152,8 @@ public abstract class SolverNew {
 
     }
 
-    public MonsterNew selectFromMostProfitableMonsters(GameNew rules, HeroNew hero, int n, double rand) {
-        List<MonsterNew> monsters = rules.getMonsters();
+    public Monster selectFromMostProfitableMonsters(Game rules, Hero hero, int n, double rand) {
+        List<Monster> monsters = rules.getMonsters();
 
         PriorityQueue<long[]> pq = new PriorityQueue<>((a,b) -> (int) (a[1] - b[1]));
         for (int name : rules.getMonsterAlive()) {
@@ -173,13 +173,13 @@ public abstract class SolverNew {
         return monsters.get((int) res);
     }
 
-    public static MonsterNew selectRandomFromClosestMonsters(GameNew rules, HeroNew hero) {
-        List<MonsterNew> monsters = rules.getMonsters();
+    public static Monster selectRandomFromClosestMonsters(Game rules, Hero hero) {
+        List<Monster> monsters = rules.getMonsters();
 
         List<Integer> closests = new ArrayList<>();
         double min = Integer.MAX_VALUE;
         for (int name : rules.getMonsterAlive()) {
-            MonsterNew m = monsters.get(name);
+            Monster m = monsters.get(name);
             double dist = rules.calcRange(hero.getX(), hero.getY(), m.getX(), m.getY());
             double steps = (dist + hero.getR()) / hero.getR();
             if (steps < min) {
@@ -195,7 +195,7 @@ public abstract class SolverNew {
         return monsters.get(target);
     }
 
-    public int[] getBestRandomPos(GameNew rules, HeroNew hero, int n, int maxSteps) {
+    public int[] getBestRandomPos(Game rules, Hero hero, int n, int maxSteps) {
         int[][] targets = rules.selectRandomPositions(n);
 
         long max = -1;

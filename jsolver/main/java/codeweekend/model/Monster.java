@@ -2,7 +2,7 @@ package codeweekend.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class MonsterNew {
+public class Monster {
 
     @JsonProperty("x")
     private int x;
@@ -21,11 +21,11 @@ public class MonsterNew {
 
     private int name;
 
-    public MonsterNew() {
+    public Monster() {
 
     }
 
-    public MonsterNew(int x, int y, int hp, int gold, int exp) {
+    public Monster(int x, int y, int hp, int gold, int exp) {
         this.hp = hp;
         this.gold = gold;
         this.exp = exp;
@@ -36,7 +36,7 @@ public class MonsterNew {
         return this.gold + this.exp * coeff;
     }*/
     
-    public static int compare(MonsterNew m1, MonsterNew m2) {
+    public static int compare(Monster m1, Monster m2) {
         return m1.gold * m1.exp > m2.gold * m2.exp ? 1 : -1;
     }
 

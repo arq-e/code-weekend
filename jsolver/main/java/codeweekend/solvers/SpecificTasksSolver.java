@@ -2,16 +2,16 @@ package codeweekend.solvers;
 
 import java.util.List;
 
-import codeweekend.model.GameNew;
-import codeweekend.model.HeroNew;
-import codeweekend.model.MonsterNew;
+import codeweekend.model.Game;
+import codeweekend.model.Hero;
+import codeweekend.model.Monster;
 import codeweekend.model.Turn;
 import codeweekend.scoring.Scoring;
 
-public class SpecificTasksSolver extends SolverNew {
+public class SpecificTasksSolver extends Solver {
 
     @Override
-    public List<Turn> solve(HeroNew hero, GameNew rules, Scoring scoring) {
+    public List<Turn> solve(Hero hero, Game rules, Scoring scoring) {
         rules.loadProfit(hero.getR(), hero.getP());
         if (rules.getTestNum() == 36) {
             solveTask36(rules, hero);
@@ -24,7 +24,7 @@ public class SpecificTasksSolver extends SolverNew {
         return hero.getTurns();
     }
 
-    public void solveTask36(GameNew rules, HeroNew hero) {
+    public void solveTask36(Game rules, Hero hero) {
         int[][] targets = new int[15][2];
 
         targets[0][0] = 1;
@@ -81,7 +81,7 @@ public class SpecificTasksSolver extends SolverNew {
 
     
 
-    public void solveTask50(GameNew rules, HeroNew hero) {
+    public void solveTask50(Game rules, Hero hero) {
 
         int[][] targets = new int[300][2];
         int t = 0;
@@ -210,13 +210,13 @@ public class SpecificTasksSolver extends SolverNew {
         }
         System.out.println(t);
 
-        List<MonsterNew> monsters = rules.getMonsters();
+        List<Monster> monsters = rules.getMonsters();
 
         for (int i = 0; i < targets.length; ++i) {
             int[] pos = targets[i];
             // System.out.println("")
-            MonsterNew target = null;
-            for (MonsterNew m : rules.getMonsters()) {
+            Monster target = null;
+            for (Monster m : rules.getMonsters()) {
                 if (m.getX() == pos[0] && m.getY() == pos[1]) {
                     target = m;
                     break;

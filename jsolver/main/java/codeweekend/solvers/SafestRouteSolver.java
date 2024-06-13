@@ -2,17 +2,17 @@ package codeweekend.solvers;
 
 import java.util.List;
 
-import codeweekend.model.GameNew;
-import codeweekend.model.HeroNew;
+import codeweekend.model.Game;
+import codeweekend.model.Hero;
 import codeweekend.model.Turn;
 import codeweekend.scoring.Scoring;
 
-public class SafestRouteSolver extends SolverNew {
+public class SafestRouteSolver extends Solver {
     private static final int NEGLIGIBLE_FATIQUE = 0;
     private static final int MAX_ALLOWED_FATIQUE = 1500;
     
     @Override
-    public List<Turn> solve(HeroNew hero, GameNew rules, Scoring scoring) {
+    public List<Turn> solve(Hero hero, Game rules, Scoring scoring) {
         rules.loadProfit(hero.getR(), hero.getP());
 
         int prevTurns = rules.getTurnsLeft();
@@ -54,12 +54,12 @@ public class SafestRouteSolver extends SolverNew {
         }
 
         scoring.updateScore(rules.getTestNum(), hero.getGold()); 
-        System.out.printf("Task %d result: %d\n", rules.getTestNum(), hero.getFatique());
+        System.out.printf("Task %d result: %d\n", rules.getTestNum(), hero.getGold());
 
         return hero.getTurns();
     }
 
-    public static int[] selectSafestTarget(GameNew rules, HeroNew hero) {
+    public static int[] selectSafestTarget(Game rules, Hero hero) {
 
         long maxProfit = -1;
         int[] maxProfitPos = new int[2];
@@ -89,7 +89,7 @@ public class SafestRouteSolver extends SolverNew {
         } else return safestPos;
     }
 
-    public static int[] selectRandomSafestTarget(GameNew rules, HeroNew hero, int n, int maxSteps) {
+    public static int[] selectRandomSafestTarget(Game rules, Hero hero, int n, int maxSteps) {
         int[][] targets = rules.selectRandomPositions(n);
 
         long maxProfit = -1;

@@ -3,18 +3,18 @@ package codeweekend.solvers;
 import java.util.List;
 import java.util.PriorityQueue;
 
-import codeweekend.model.GameNew;
-import codeweekend.model.HeroNew;
+import codeweekend.model.Game;
+import codeweekend.model.Hero;
 import codeweekend.model.Turn;
 import codeweekend.scoring.Scoring;
 
-public class SecondSolver extends SolverNew{
+public class SecondSolver extends Solver{
 
     @Override
-    public List<Turn> solve(HeroNew hero, GameNew rules, Scoring scoring) {
+    public List<Turn> solve(Hero hero, Game rules, Scoring scoring) {
         rules.loadProfit(hero.getR(), hero.getP());
 
-        hero.moveToPosition(950, 100, rules, true, true);
+        if (rules.getTestNum() == 36 || rules.getTestNum() == 37) hero.moveToPosition(100, 950, rules, true, true);
         while (rules.getTurnsLeft() > 0) {
             //System.out.println(rules.getTurnsLeft());
             
@@ -49,7 +49,7 @@ public class SecondSolver extends SolverNew{
         return hero.getTurns();
     }
 
-    public int[] getBestPosInRange(HeroNew hero, GameNew rules, int range, Boolean allow_self) {
+    public int[] getBestPosInRange(Hero hero, Game rules, int range, Boolean allow_self) {
         int x = hero.getX(); int y = hero.getY();
 
         double max = -1;

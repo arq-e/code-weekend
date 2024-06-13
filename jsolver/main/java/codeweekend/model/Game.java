@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class GameNew {
+public class Game {
     public final int width;
     public final int height;
     public final int totalTurns;
@@ -15,15 +15,14 @@ public class GameNew {
     private int maxGold;
 
     private Set<Integer> monsterAlive;
-    private List<MonsterNew> monsters;
-    public HeroNew hero;
+    private List<Monster> monsters;
 
     private long[][] dangerMap;
     private int[][][] profitMap;
     private boolean[][] visitedMap;
     private int[][] monsterMap;
 
-    public GameNew(int testNum, int width, int height, int maxTurns) {
+    public Game(int testNum, int width, int height, int maxTurns) {
         this.testNum = testNum;
         this.width = width;
         this.height = height;
@@ -33,7 +32,7 @@ public class GameNew {
 
 
 
-    public GameNew(int width, int height, int maxTurns, int testNum, int turnsLeft, int maxGold, Set<Integer> monsterAlive, List<MonsterNew> monsters) {
+    public Game(int width, int height, int maxTurns, int testNum, int turnsLeft, int maxGold, Set<Integer> monsterAlive, List<Monster> monsters) {
         this.width = width;
         this.height = height;
         this.totalTurns = maxTurns;
@@ -46,10 +45,10 @@ public class GameNew {
     }
 
 
-    public void init(List<MonsterNew> monsters) {
+    public void init(List<Monster> monsters) {
         this.monsters = monsters;
         monsterAlive = new HashSet<>();
-        for (MonsterNew monster : monsters) {
+        for (Monster monster : monsters) {
             monsterAlive.add(monster.getName());
         }
         dangerMap = new long[width + 1][height + 1];
@@ -66,7 +65,7 @@ public class GameNew {
 
         for (Integer name : monsterAlive) {
             
-            MonsterNew m = monsters.get(name);
+            Monster m = monsters.get(name);
             monsterMap[m.getX()][m.getY()] = name;
             for (int i = Math.max(0, m.getX() - m.getRange()); i <= Math.min(width, m.getX() + m.getRange()); ++i) {
                 for (int j = Math.max(0, m.getY() - m.getRange()); j <= Math.min(height, m.getY() + m.getRange()); ++j) {
@@ -83,7 +82,7 @@ public class GameNew {
     }
 
     
-    public void clearDanger(MonsterNew m) {
+    public void clearDanger(Monster m) {
         monsterAlive.remove(m.getName());
         for (int i = Math.max(0, m.getX() - m.getRange()); i <= Math.min(width, m.getX() + m.getRange()); ++i) {
             for (int j = Math.max(0, m.getY() - m.getRange()); j <= Math.min(height, m.getY() + m.getRange()); ++j) {
@@ -98,7 +97,7 @@ public class GameNew {
     public void loadProfit(int range, int power) {
         profitMap = new int[width + 1][height + 1][3]; 
         for (Integer name : monsterAlive) {
-            MonsterNew m = monsters.get(name);
+            Monster m = monsters.get(name);
             for (int i = Math.max(0, m.getX() - range); i <= Math.min(width, m.getX() + range); ++i) {
                 for (int j = Math.max(0, m.getY() - range); j <= Math.min(height, m.getY() + range); ++j) {
                     double dist = calcRange(i, j, m.getX(), m.getY());
@@ -166,8 +165,8 @@ public class GameNew {
         return targets;
     }
 
-    public GameNew clone() {
-        return new GameNew(width, height, totalTurns, testNum, turnsLeft, maxGold, monsterAlive, monsters);
+    public Game clone() {
+        return new Game(width, height, totalTurns, testNum, turnsLeft, maxGold, monsterAlive, monsters);
 
     }
 
@@ -216,7 +215,7 @@ public class GameNew {
         return monsterMap[x][y];
     }
 
-    public void removeMonster(MonsterNew m) {
+    public void removeMonster(Monster m) {
         monsterMap[m.getX()][m.getY()] = -1;
         clearDanger(m);
     }
@@ -229,12 +228,8 @@ public class GameNew {
         return monsterAlive;
     }
 
-    public List<MonsterNew> getMonsters() {
+    public List<Monster> getMonsters() {
         return monsters;
-    }
-
-    public HeroNew getHero() {
-        return hero;
     }
 
 

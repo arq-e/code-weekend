@@ -15,9 +15,9 @@ public class Main {
     public static void main(String[] args){
         Scoring scoring = new Scoring();
 
-        int solver = 4;
+        int solver = 5;
         for (int k = 0; k < 1; ++k) {
-            for (int i = 50; i <= 50; ++i) {
+            for (int i = 1; i <= 25; ++i) {
                 System.out.printf("Task %d in progress...\n", i);
                 computeNew( i, scoring, solver); 
             }
@@ -31,9 +31,9 @@ public class Main {
         ObjectMapper objectMapper = new ObjectMapper();
         int res = 0;
 
+        Hero hero = new Hero();
+        Game game = IOUtils.parseInput(objectMapper, task, hero);
         
-        GameNew game = IOUtils.parseInput(objectMapper, task);
-        HeroNew hero = game.getHero();
 
         List<Turn> turns = null;
 
