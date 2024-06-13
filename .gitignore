@@ -12,4 +12,7 @@ bin/
 
 **/target
 **/test
+**/paths
+**/scores
+**/stats
 bestScores

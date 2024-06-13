@@ -11,7 +11,9 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <src.dir>jsolver/main/java</src.dir>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -19,4 +21,26 @@
             <version>2.13.3</version>
         </dependency>
     </dependencies>
+    
+    <build>
+        <sourceDirectory>${src.dir}</sourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                <execution>
+                    <goals>
+                    <goal>exec</goal>
+                    </goals>
+                </execution>
+                </executions>
+                <configuration>
+                    <mainClass>codeweekend.Main</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

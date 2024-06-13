@@ -1,4 +1,4 @@
-package jweekend;
+package codeweekend.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
