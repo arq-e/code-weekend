@@ -1,5 +1,5 @@
 api_token_path = '.api_token'
-api_url = 'https://codeweekend.dev:3721/api/'
+api_url = 'https://codeweekend.dev:3723/api/'
 files_url = 'https://codeweekend.dev:81/'
 
 import requests

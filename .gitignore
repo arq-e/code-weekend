@@ -4,8 +4,7 @@
 .pyc
 .vscode
 
-tasks/
-submissions/
+
 build/
 
 bin/
@@ -15,4 +14,7 @@ bin/
 **/paths
 **/scores
 **/stats
+solutions/
+tasks/
+submissions/
 bestScores
