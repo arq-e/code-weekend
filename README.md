@@ -1,10 +1,17 @@
 Artefacts of participation in [Code Weekend #1](https://codeweekend.dev) by `undercut` team.
 
-## Team members
+We placed `40th` after first day and `25th` overall.
 
-[arq-e](https://github.com/arq-e)
+## Team members and their contribution
 
-[nedmv](https://github.com/nedmv)
+[arq-e](https://github.com/arq-e):
+  - Main solver (Java)
+  - Python scripts
+
+[nedmv](https://github.com/nedmv):
+  - Map graphs (Python)
+  - Java solver tweaks
+  - C++ solver (unfinished)
 
 
 ## Useful links
