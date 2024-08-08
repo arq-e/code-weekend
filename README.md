@@ -9,7 +9,7 @@ We placed `40th` after first day and `25th` overall.
   - Python scripts
 
 [nedmv](https://github.com/nedmv):
-  - Map graphs (Python)
+  - Map plots (Python)
   - Java solver tweaks
   - C++ solver (unfinished)
 
